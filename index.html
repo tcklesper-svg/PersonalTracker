@@ -797,6 +797,7 @@
       .goal-polish-btn { flex: 1; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
   const CONFIG = {
     appTitle: "Progressive Overload Coach",
@@ -2341,6 +2342,12 @@ loadToday(); loadTomorrow();
 renderStreak(); renderTodayHeader(); renderTomorrowCount();
 updateDayBar(); setInterval(updateDayBar,60000);
 startTicker();
+window.addEventListener('sync:dashboard', () => {
+  runRollover(); runStreakCheck();
+  loadToday(); loadTomorrow();
+  renderStreak(); renderTodayHeader(); renderTomorrowCount();
+  cycleIdx = 0; startTicker();
+});
 </script>
 <script>
 (() => {
@@ -2756,6 +2763,7 @@ startTicker();
 
   render();
   startStackTicker();
+  window.addEventListener('sync:training', () => { render(); });
 })();
 </script>
 <script>
@@ -3249,6 +3257,12 @@ startTicker();
   renderExerciseSelect();
   renderTodayWorkout();
   renderWeightDisplay();
+  window.addEventListener('sync:training', () => {
+    renderTodayWorkout();
+    renderWeightDisplay();
+    renderExerciseSelect();
+    if (selectedExId) updateLogForm();
+  });
 
 })();
 
@@ -3540,6 +3554,143 @@ startTicker();
 
   // ── Init ──
   renderAll();
+  window.addEventListener('sync:school', renderAll);
+})();
+
+// ── Supabase Sync ──
+(function () {
+  'use strict';
+  const SUPABASE_URL = 'https://mbgyhgszvktcqkwjoguw.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_x-svkoqhTrdiffr_zELP3A_oUCZpeZT';
+
+  if (!window.supabase) { console.warn('Supabase not loaded'); return; }
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function bucketForKey(k) {
+    if (k.startsWith('goals:') || k === 'goal_streak_v1') return 'dashboard';
+    if (k.startsWith('po:') || k.startsWith('stack:'))    return 'training';
+    if (k === 'sc:assignments')                            return 'school';
+    return null;
+  }
+
+  function collect(bucket) {
+    const out = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && bucketForKey(k) === bucket) {
+        try { out[k] = JSON.parse(localStorage.getItem(k)); } catch { out[k] = localStorage.getItem(k); }
+      }
+    }
+    return out;
+  }
+
+  function apply(bucket, data) {
+    Object.entries(data).forEach(([k, v]) => {
+      try { origSet(k, JSON.stringify(v)); } catch {}
+    });
+    window.dispatchEvent(new CustomEvent('sync:' + bucket));
+  }
+
+  // Debounced push
+  const timers = {}, lastPushed = {};
+
+  function schedule(bucket) {
+    clearTimeout(timers[bucket]);
+    timers[bucket] = setTimeout(() => push(bucket), 250);
+  }
+
+  async function push(bucket) {
+    try {
+      const data = collect(bucket);
+      const json = JSON.stringify(data);
+      if (json === lastPushed[bucket]) return;
+      lastPushed[bucket] = json;
+      await db.from('app_state').upsert({ key: bucket, data, updated_at: new Date().toISOString() });
+    } catch (e) { console.warn('Sync push failed:', e); }
+  }
+
+  // Keepalive flush on page close
+  function flushAll() {
+    ['dashboard', 'training', 'school'].forEach(bucket => {
+      try {
+        const data = collect(bucket);
+        const json = JSON.stringify(data);
+        if (json === lastPushed[bucket]) return;
+        fetch(`${SUPABASE_URL}/rest/v1/app_state`, {
+          method: 'POST', keepalive: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({ key: bucket, data, updated_at: new Date().toISOString() })
+        });
+      } catch {}
+    });
+  }
+
+  // Monkey-patch localStorage
+  const origSet    = localStorage.setItem.bind(localStorage);
+  const origRemove = localStorage.removeItem.bind(localStorage);
+  localStorage.setItem = function (k, v) {
+    origSet(k, v);
+    try { const b = bucketForKey(k); if (b) schedule(b); } catch {}
+  };
+  localStorage.removeItem = function (k) {
+    origRemove(k);
+    try { const b = bucketForKey(k); if (b) schedule(b); } catch {}
+  };
+
+  // Initial pull — seed remote if empty, apply remote if populated
+  async function init() {
+    for (const bucket of ['dashboard', 'training', 'school']) {
+      try {
+        const { data, error } = await db.from('app_state').select('data').eq('key', bucket).maybeSingle();
+        if (error) { await push(bucket); continue; }
+        const remote     = data?.data || {};
+        const remoteJson = JSON.stringify(remote);
+        const local      = collect(bucket);
+        if (Object.keys(remote).length === 0) {
+          await push(bucket); // seed remote from local
+        } else if (remoteJson !== JSON.stringify(local)) {
+          lastPushed[bucket] = remoteJson;
+          apply(bucket, remote); // apply remote to local
+        }
+      } catch (e) { console.warn('Sync init', bucket, e); }
+    }
+  }
+
+  // Realtime — apply changes from other devices
+  let pendingRemote = {};
+  db.channel('app_state')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'app_state' }, payload => {
+      try {
+        const bucket = payload.new?.key;
+        if (!bucket) return;
+        const json = JSON.stringify(payload.new?.data);
+        if (json === lastPushed[bucket]) return; // echo from our own push
+        const active   = document.activeElement;
+        const isTyping = active && (['INPUT','TEXTAREA','SELECT'].includes(active.tagName) || active.contentEditable === 'true');
+        if (isTyping) { pendingRemote[bucket] = payload.new.data; return; }
+        lastPushed[bucket] = json;
+        apply(bucket, payload.new.data);
+      } catch {}
+    })
+    .subscribe();
+
+  document.addEventListener('focusout', () => {
+    try {
+      Object.entries(pendingRemote).forEach(([b, d]) => { lastPushed[b] = JSON.stringify(d); apply(b, d); });
+      pendingRemote = {};
+    } catch {}
+  });
+
+  window.addEventListener('pagehide', flushAll);
+  window.addEventListener('beforeunload', flushAll);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAll(); });
+
+  init();
 })();
 
 // ── Tab switching ──
