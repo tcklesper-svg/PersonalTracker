@@ -853,6 +853,7 @@
   <div class="dash-tabs" role="tablist">
     <button class="dash-tab active" data-tab="dashboard" role="tab" aria-selected="true">Dashboard</button>
     <button class="dash-tab" data-tab="training" role="tab" aria-selected="false">Training</button>
+    <button class="dash-tab" data-tab="school" role="tab" aria-selected="false">School</button>
   </div>
 
   <div class="dash-tab-panel active" id="tab-dashboard">
@@ -1619,6 +1620,285 @@
 
   </div><!-- /po-shell -->
   </div><!-- /tab-training -->
+
+  <!-- ═══════════════ SCHOOL TAB ═══════════════ -->
+  <div class="dash-tab-panel" id="tab-school">
+  <style>
+    #tab-school {
+      --sc-accent: #818cf8;
+      --sc-accent-dim: rgba(129,140,248,0.15);
+      --sc-danger: #ff8a8a;
+      --sc-danger-dim: rgba(255,138,138,0.12);
+      --sc-warn: #fbbf24;
+      --sc-warn-dim: rgba(251,191,36,0.12);
+      --sc-good: #6ee7b7;
+      --sc-good-dim: rgba(110,231,183,0.12);
+      --sc-soon-dim: rgba(129,140,248,0.10);
+    }
+    .sc-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px; padding: 18px 18px 14px;
+      margin-bottom: 14px;
+    }
+    .sc-card-header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 14px;
+    }
+    .sc-eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(255,255,255,0.4);
+    }
+    /* Settings toggle */
+    .sc-settings-toggle {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; background: transparent; border: none; color: #fff;
+      font-family: inherit; cursor: pointer; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sc-settings-status {
+      font-size: 11px; color: rgba(255,255,255,0.4);
+      margin-left: auto; margin-right: 8px;
+    }
+    .sc-settings-status.sc-status-connected { color: var(--sc-good); }
+    .sc-settings-icon { font-size: 16px; color: rgba(255,255,255,0.4); }
+    .sc-settings-body { display: none; margin-top: 16px; }
+    .sc-settings-body.open { display: block; }
+    .sc-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    .sc-field label {
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: rgba(255,255,255,0.4);
+    }
+    .sc-input {
+      padding: 12px 13px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.28); color: #fff;
+      font-family: inherit; font-size: 14px; width: 100%;
+      appearance: none; -webkit-appearance: none;
+    }
+    .sc-input:focus { outline: none; border-color: rgba(255,255,255,0.35); }
+    .sc-input::placeholder { color: rgba(255,255,255,0.3); }
+    .sc-settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .sc-btn-primary {
+      padding: 12px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.85);
+      background: linear-gradient(180deg,#fff 0%,#e8e5dd 100%);
+      color: #0a0a0b; font-family: inherit; font-size: 13px;
+      font-weight: 700; cursor: pointer; min-height: 48px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sc-btn-primary:hover { transform: translateY(-1px); }
+    .sc-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .sc-btn-secondary {
+      padding: 12px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: #fff; font-family: inherit; font-size: 13px;
+      font-weight: 600; cursor: pointer; min-height: 48px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sc-btn-secondary:hover { background: rgba(255,255,255,0.08); }
+    .sc-sync-status {
+      font-size: 12px; color: rgba(255,255,255,0.5);
+      margin-top: 10px; min-height: 18px;
+    }
+    .sc-sync-status.sc-sync-success { color: var(--sc-good); }
+    .sc-sync-status.sc-sync-error   { color: var(--sc-danger); }
+    /* Alerts */
+    .sc-alerts { margin-bottom: 12px; }
+    .sc-alerts-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .sc-alert-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+    }
+    .sc-alert-danger { background: var(--sc-danger-dim); color: var(--sc-danger); border: 1px solid rgba(255,138,138,0.25); }
+    .sc-alert-warn   { background: var(--sc-warn-dim);   color: var(--sc-warn);   border: 1px solid rgba(251,191,36,0.25); }
+    .sc-alert-info   { background: var(--sc-accent-dim); color: var(--sc-accent); border: 1px solid rgba(129,140,248,0.25); }
+    /* Today's plan */
+    .sc-plan-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .sc-plan-row:last-child { border-bottom: none; }
+    .sc-plan-body { flex: 1; min-width: 0; }
+    .sc-plan-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 3px; word-break: break-word; }
+    .sc-plan-meta  { font-size: 11px; color: rgba(255,255,255,0.45); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .sc-plan-hours { background: var(--sc-accent-dim); color: var(--sc-accent); padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    /* Assignment rows */
+    .sc-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .sc-row:last-child { border-bottom: none; }
+    .sc-row-done { opacity: 0.4; }
+    .sc-row-done .sc-row-title { text-decoration: line-through; }
+    .sc-row-body { flex: 1; min-width: 0; }
+    .sc-row-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; word-break: break-word; }
+    .sc-row-meta  { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .sc-course-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      padding: 2px 8px; border-radius: 999px;
+      background: var(--sc-accent-dim); color: var(--sc-accent);
+      white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sc-hours { font-size: 10px; color: rgba(255,255,255,0.4); }
+    /* Status button */
+    .sc-status-btn {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.5);
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      font-family: inherit; padding: 0;
+    }
+    .sc-status-btn:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+    /* Due date colours */
+    .sc-due { font-size: 11px; font-weight: 600; }
+    .sc-due-danger { color: var(--sc-danger); }
+    .sc-due-warn   { color: var(--sc-warn); }
+    .sc-due-soon   { color: var(--sc-accent); }
+    .sc-due-done, .sc-due-normal { color: rgba(255,255,255,0.4); }
+    /* Delete button */
+    .sc-del-btn {
+      background: transparent; border: none; color: rgba(255,255,255,0.25);
+      font-size: 18px; cursor: pointer; padding: 4px 8px; min-height: 44px;
+      line-height: 1; display: flex; align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sc-del-btn:hover { color: var(--sc-danger); }
+    /* Add button */
+    .sc-add-btn {
+      padding: 8px 14px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: #fff; font-family: inherit; font-size: 12px; font-weight: 600;
+      cursor: pointer; min-height: 36px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sc-add-btn:hover { background: rgba(255,255,255,0.08); }
+    /* Filter */
+    .sc-filter-row { display: flex; gap: 6px; margin-bottom: 14px; }
+    .sc-filter-btn {
+      flex: 1; padding: 9px 6px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent; color: rgba(255,255,255,0.45);
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      cursor: pointer; min-height: 40px;
+      -webkit-tap-highlight-color: transparent;
+      transition: all 0.15s;
+    }
+    .sc-filter-btn.active {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.18);
+      color: #fff;
+    }
+    /* Empty state */
+    .sc-empty { font-size: 12px; color: rgba(255,255,255,0.3); font-style: italic; padding: 14px 0; text-align: center; }
+    /* Modal */
+    .sc-modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+      z-index: 200; align-items: center; justify-content: center; padding: 20px;
+    }
+    .sc-modal-bg.show { display: flex; }
+    .sc-modal {
+      width: 100%; max-width: 420px;
+      background: #111113; border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 16px; padding: 22px; max-height: 88vh; overflow-y: auto;
+    }
+    .sc-modal h3 { margin: 0 0 16px; font-size: 17px; font-weight: 700; color: #fff; }
+    .sc-modal .sc-field { margin-bottom: 12px; }
+    .sc-modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+    .sc-modal-actions button { flex: 1; }
+    .sc-modal-del { display: block; text-align: center; margin-top: 10px; font-size: 12px; color: var(--sc-danger); cursor: pointer; text-decoration: underline; padding: 8px; }
+    .sc-modal-del.hidden { display: none; }
+    .sc-select {
+      padding: 12px 13px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.28); color: #fff;
+      font-family: inherit; font-size: 14px; width: 100%;
+      -webkit-appearance: none; appearance: none;
+    }
+    .sc-select:focus { outline: none; border-color: rgba(255,255,255,0.35); }
+  </style>
+
+  <!-- Settings -->
+  <div class="sc-card">
+    <button class="sc-settings-toggle" id="scSettingsToggle" aria-expanded="false">
+      <span class="sc-eyebrow" style="margin-bottom:0">Canvas Sync</span>
+      <span class="sc-settings-status" id="scSettingsStatus">Not connected</span>
+      <span class="sc-settings-icon">⚙</span>
+    </button>
+    <div class="sc-settings-body" id="scSettingsBody">
+      <div class="sc-field" style="margin-top:14px">
+        <label>Canvas domain</label>
+        <input class="sc-input" id="scDomain" type="text" placeholder="school.instructure.com" autocomplete="off" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="sc-field">
+        <label>Access token <span style="color:rgba(255,255,255,0.3);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">— Canvas → Account → Settings → New Access Token</span></label>
+        <input class="sc-input" id="scToken" type="password" placeholder="Paste your token here" autocomplete="off">
+      </div>
+      <div class="sc-settings-actions">
+        <button class="sc-btn-primary" id="scSyncBtn">Sync from Canvas</button>
+        <button class="sc-btn-secondary" id="scSaveSettings">Save</button>
+      </div>
+      <div class="sc-sync-status" id="scSyncStatus"></div>
+    </div>
+  </div>
+
+  <!-- Alert chips -->
+  <div id="scAlerts"></div>
+
+  <!-- Today's focus -->
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-eyebrow">Today's Focus</div>
+    </div>
+    <div id="scPlanList"><div class="sc-empty">No upcoming assignments yet.</div></div>
+  </div>
+
+  <!-- All assignments -->
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-eyebrow">All Assignments</div>
+      <button class="sc-add-btn" id="scAddBtn">+ Add</button>
+    </div>
+    <div class="sc-filter-row">
+      <button class="sc-filter-btn active" data-filter="all">All</button>
+      <button class="sc-filter-btn" data-filter="todo">To do</button>
+      <button class="sc-filter-btn" data-filter="done">Done</button>
+    </div>
+    <div id="scAssignmentList"><div class="sc-empty">Sync from Canvas or add manually.</div></div>
+  </div>
+
+  <!-- Add / edit modal -->
+  <div class="sc-modal-bg" id="scModal">
+    <div class="sc-modal">
+      <h3 id="scModalTitle">Add Assignment</h3>
+      <div class="sc-field"><label>Assignment name</label><input class="sc-input" id="scATitle" type="text" placeholder="e.g. Essay draft"></div>
+      <div class="sc-field"><label>Course</label><input class="sc-input" id="scACourse" type="text" placeholder="e.g. English 101"></div>
+      <div class="sc-field"><label>Due date</label><input class="sc-input" id="scADue" type="date"></div>
+      <div class="sc-field"><label>Estimated hours</label><input class="sc-input" id="scAHours" type="number" placeholder="e.g. 3" min="0" step="0.5" inputmode="decimal"></div>
+      <div class="sc-field"><label>Status</label>
+        <select class="sc-select" id="scAStatus">
+          <option value="todo">To do</option>
+          <option value="in-progress">In progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div class="sc-modal-actions">
+        <button class="sc-btn-secondary" id="scAModalCancel">Cancel</button>
+        <button class="sc-btn-primary" id="scAModalSave">Save</button>
+      </div>
+      <span class="sc-modal-del hidden" id="scAModalDel">Delete assignment</span>
+    </div>
+  </div>
+
+  </div><!-- /tab-school -->
 
 </div>
 <script>
@@ -2970,6 +3250,296 @@ startTicker();
   renderTodayWorkout();
   renderWeightDisplay();
 
+})();
+
+// ── School Assignment Tracker ──
+(function () {
+  'use strict';
+  const get = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+  const set = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function daysUntil(dateStr) {
+    if (!dateStr) return 999;
+    const due   = new Date(dateStr + 'T00:00:00');
+    const today = new Date(todayStr() + 'T00:00:00');
+    return Math.ceil((due - today) / 86400000);
+  }
+  function fmtDue(dateStr) {
+    if (!dateStr) return '';
+    const d = daysUntil(dateStr);
+    if (d < 0)  return `${Math.abs(d)}d overdue`;
+    if (d === 0) return 'Due today';
+    if (d === 1) return 'Due tomorrow';
+    const dt = new Date(dateStr + 'T00:00:00');
+    return `Due ${dt.toLocaleDateString('en-US', { month:'short', day:'numeric' })}`;
+  }
+  function esc(s) {
+    return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  const getAssignments = () => get('sc:assignments') || [];
+  const saveAssignments = a => set('sc:assignments', a);
+  const getSettings     = () => get('sc:settings') || {};
+  const saveSettings    = s => set('sc:settings', s);
+
+  // ── Canvas sync ──
+  async function syncFromCanvas() {
+    const { domain, token } = getSettings();
+    if (!domain || !token) { showStatus('Enter domain and token first.', 'error'); return; }
+    const btn = document.getElementById('scSyncBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Syncing…'; }
+    showStatus('Connecting…', '');
+    try {
+      const clean = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const url   = `https://${clean}/api/v1/planner/items?start_date=${todayStr()}&per_page=100`;
+      const res   = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+      if (!res.ok) {
+        const msg = res.status === 401 ? 'Invalid token.' : res.status === 404 ? 'Canvas domain not found.' : `Error ${res.status}`;
+        showStatus(msg, 'error'); return;
+      }
+      const items = await res.json();
+      const list  = getAssignments();
+      let added = 0, updated = 0;
+      items.forEach(item => {
+        const types = ['assignment','quiz','discussion_topic','wiki_page'];
+        if (!types.includes(item.plannable_type) || !item.plannable?.title) return;
+        const id       = `canvas_${item.plannable_type}_${item.plannable_id}`;
+        const dueDate  = (item.plannable.due_at || item.plannable_date || '').split('T')[0];
+        const submitted = !!(item.submissions?.submitted || item.submissions?.graded);
+        const idx = list.findIndex(a => a.id === id);
+        if (idx > -1) {
+          list[idx].title   = item.plannable.title;
+          list[idx].course  = item.context_name || '';
+          list[idx].dueDate = dueDate;
+          if (submitted && list[idx].status !== 'done') list[idx].status = 'done';
+          updated++;
+        } else {
+          list.push({ id, title: item.plannable.title, course: item.context_name || '', dueDate,
+            estimatedHours: 0, status: submitted ? 'done' : 'todo', source: 'canvas' });
+          added++;
+        }
+      });
+      saveAssignments(list);
+      set('sc:lastSync', new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }));
+      showStatus(`✓ ${added} new · ${updated} updated`, 'success');
+      renderAll();
+    } catch (e) {
+      showStatus(`Failed: ${e.message}`, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Sync from Canvas'; }
+    }
+  }
+
+  function showStatus(msg, type) {
+    const el = document.getElementById('scSyncStatus');
+    if (el) { el.textContent = msg; el.className = `sc-sync-status${type ? ' sc-sync-' + type : ''}`; }
+  }
+
+  // ── Render ──
+  function statusIcon(s) { return s === 'done' ? '✓' : s === 'in-progress' ? '◑' : '○'; }
+  function urgencyClass(dateStr, status) {
+    if (status === 'done') return 'done';
+    const d = daysUntil(dateStr);
+    if (d < 0)  return 'danger';
+    if (d === 0) return 'warn';
+    if (d <= 2)  return 'soon';
+    return 'normal';
+  }
+
+  function renderAlerts() {
+    const el = document.getElementById('scAlerts');
+    if (!el) return;
+    const list = getAssignments();
+    const overdue   = list.filter(a => a.status !== 'done' && daysUntil(a.dueDate) < 0).length;
+    const dueToday  = list.filter(a => a.status !== 'done' && daysUntil(a.dueDate) === 0).length;
+    const dueTomorrow = list.filter(a => a.status !== 'done' && daysUntil(a.dueDate) === 1).length;
+    const chips = [];
+    if (overdue)    chips.push(`<span class="sc-alert-chip sc-alert-danger">⚠ ${overdue} overdue</span>`);
+    if (dueToday)   chips.push(`<span class="sc-alert-chip sc-alert-warn">⏰ ${dueToday} due today</span>`);
+    if (dueTomorrow) chips.push(`<span class="sc-alert-chip sc-alert-info">📅 ${dueTomorrow} due tomorrow</span>`);
+    el.innerHTML = chips.length ? `<div class="sc-alerts-row">${chips.join('')}</div>` : '';
+  }
+
+  function renderTodayPlan() {
+    const el = document.getElementById('scPlanList');
+    if (!el) return;
+    const focus = getAssignments()
+      .filter(a => a.status !== 'done' && a.dueDate)
+      .sort((a, b) => daysUntil(a.dueDate) - daysUntil(b.dueDate))
+      .slice(0, 3);
+    if (!focus.length) { el.innerHTML = '<div class="sc-empty">Nothing due soon — all caught up.</div>'; return; }
+    el.innerHTML = focus.map(a => {
+      const urg  = urgencyClass(a.dueDate, a.status);
+      const days = daysUntil(a.dueDate);
+      const hHint = a.estimatedHours > 0 && days > 0
+        ? `<span class="sc-plan-hours">${(a.estimatedHours / days).toFixed(1)}h/day</span>` : '';
+      return `<div class="sc-plan-row">
+        <button class="sc-status-btn" data-id="${a.id}" style="border-color:${urg==='danger'?'rgba(255,138,138,0.5)':urg==='warn'?'rgba(251,191,36,0.5)':urg==='soon'?'rgba(129,140,248,0.5)':'rgba(255,255,255,0.18)'}">${statusIcon(a.status)}</button>
+        <div class="sc-plan-body">
+          <div class="sc-plan-title">${esc(a.title)}</div>
+          <div class="sc-plan-meta"><span>${esc(a.course)}</span> · <span class="sc-due sc-due-${urg}">${fmtDue(a.dueDate)}</span>${hHint}</div>
+        </div>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('.sc-status-btn').forEach(b => b.addEventListener('click', () => { cycleStatus(b.dataset.id); renderAll(); }));
+  }
+
+  let activeFilter = 'all';
+
+  function renderAssignmentList() {
+    const el = document.getElementById('scAssignmentList');
+    if (!el) return;
+    let list = getAssignments().sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1; if (!b.dueDate) return -1;
+      return a.dueDate.localeCompare(b.dueDate);
+    });
+    if (activeFilter === 'todo') list = list.filter(a => a.status !== 'done');
+    if (activeFilter === 'done') list = list.filter(a => a.status === 'done');
+    if (!list.length) { el.innerHTML = '<div class="sc-empty">No assignments here.</div>'; return; }
+    el.innerHTML = list.map(a => {
+      const urg = urgencyClass(a.dueDate, a.status);
+      return `<div class="sc-row${a.status === 'done' ? ' sc-row-done' : ''}">
+        <button class="sc-status-btn" data-id="${a.id}">${statusIcon(a.status)}</button>
+        <div class="sc-row-body">
+          <div class="sc-row-title">${esc(a.title)}</div>
+          <div class="sc-row-meta">
+            ${a.course ? `<span class="sc-course-badge">${esc(a.course)}</span>` : ''}
+            ${a.dueDate ? `<span class="sc-due sc-due-${urg}">${fmtDue(a.dueDate)}</span>` : ''}
+            ${a.estimatedHours > 0 ? `<span class="sc-hours">${a.estimatedHours}h est.</span>` : ''}
+          </div>
+        </div>
+        <button class="sc-del-btn" data-id="${a.id}">×</button>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('.sc-status-btn').forEach(b => b.addEventListener('click', () => { cycleStatus(b.dataset.id); renderAll(); }));
+    el.querySelectorAll('.sc-del-btn').forEach(b => b.addEventListener('click', () => {
+      saveAssignments(getAssignments().filter(a => a.id !== b.dataset.id)); renderAll();
+    }));
+  }
+
+  function cycleStatus(id) {
+    const list = getAssignments();
+    const a = list.find(x => x.id === id);
+    if (!a) return;
+    a.status = { todo: 'in-progress', 'in-progress': 'done', done: 'todo' }[a.status] || 'todo';
+    saveAssignments(list);
+  }
+
+  function updateConnectionStatus() {
+    const el = document.getElementById('scSettingsStatus');
+    if (!el) return;
+    const { domain, token } = getSettings();
+    if (domain && token) {
+      const last = get('sc:lastSync');
+      el.textContent = last ? `Synced ${last}` : 'Connected';
+      el.className = 'sc-settings-status sc-status-connected';
+    } else {
+      el.textContent = 'Not connected';
+      el.className = 'sc-settings-status';
+    }
+  }
+
+  function renderAll() { renderAlerts(); renderTodayPlan(); renderAssignmentList(); updateConnectionStatus(); }
+
+  // ── Settings panel ──
+  document.getElementById('scSettingsToggle')?.addEventListener('click', function () {
+    const body = document.getElementById('scSettingsBody');
+    if (!body) return;
+    const open = !body.classList.contains('open');
+    body.classList.toggle('open', open);
+    this.setAttribute('aria-expanded', open);
+    if (open) {
+      const { domain, token } = getSettings();
+      const d = document.getElementById('scDomain'); if (d && domain) d.value = domain;
+      const t = document.getElementById('scToken');  if (t && token)  t.value = token;
+    }
+  });
+  document.getElementById('scSaveSettings')?.addEventListener('click', () => {
+    const domain = document.getElementById('scDomain')?.value.trim();
+    const token  = document.getElementById('scToken')?.value.trim();
+    if (!domain || !token) { showStatus('Both fields required.', 'error'); return; }
+    saveSettings({ domain, token });
+    showStatus('Saved.', 'success');
+    updateConnectionStatus();
+    setTimeout(() => document.getElementById('scSettingsBody')?.classList.remove('open'), 900);
+  });
+  document.getElementById('scSyncBtn')?.addEventListener('click', syncFromCanvas);
+
+  // ── Filter buttons ──
+  document.querySelectorAll('.sc-filter-btn').forEach(btn => btn.addEventListener('click', () => {
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll('.sc-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+    renderAssignmentList();
+  }));
+
+  // ── Add / edit modal ──
+  let editingScId = null;
+
+  function openModal(a) {
+    editingScId = a?.id || null;
+    document.getElementById('scModalTitle').textContent = a ? 'Edit Assignment' : 'Add Assignment';
+    document.getElementById('scATitle').value  = a?.title  || '';
+    document.getElementById('scACourse').value = a?.course || '';
+    document.getElementById('scADue').value    = a?.dueDate || '';
+    document.getElementById('scAHours').value  = a?.estimatedHours || '';
+    document.getElementById('scAStatus').value = a?.status || 'todo';
+    document.getElementById('scAModalDel').classList.toggle('hidden', !a);
+    document.getElementById('scModal').classList.add('show');
+  }
+
+  document.getElementById('scAddBtn')?.addEventListener('click', () => openModal(null));
+  document.getElementById('scAModalCancel')?.addEventListener('click', () => document.getElementById('scModal').classList.remove('show'));
+  document.getElementById('scAModalSave')?.addEventListener('click', () => {
+    const title = document.getElementById('scATitle')?.value.trim();
+    if (!title) return;
+    const list = getAssignments();
+    const data = {
+      title,
+      course:         document.getElementById('scACourse')?.value.trim() || '',
+      dueDate:        document.getElementById('scADue')?.value || '',
+      estimatedHours: parseFloat(document.getElementById('scAHours')?.value) || 0,
+      status:         document.getElementById('scAStatus')?.value || 'todo',
+      source:         'manual'
+    };
+    if (editingScId) {
+      const i = list.findIndex(a => a.id === editingScId);
+      if (i > -1) list[i] = { ...list[i], ...data };
+    } else {
+      list.push({ ...data, id: 'sc_' + Date.now() });
+    }
+    saveAssignments(list);
+    document.getElementById('scModal').classList.remove('show');
+    renderAll();
+  });
+  document.getElementById('scAModalDel')?.addEventListener('click', () => {
+    if (!editingScId || !confirm('Delete this assignment?')) return;
+    saveAssignments(getAssignments().filter(a => a.id !== editingScId));
+    document.getElementById('scModal').classList.remove('show');
+    renderAll();
+  });
+
+  // Long-press on a row to edit
+  document.getElementById('scAssignmentList')?.addEventListener('pointerdown', function (e) {
+    const row = e.target.closest('.sc-row');
+    if (!row || e.target.closest('.sc-status-btn') || e.target.closest('.sc-del-btn')) return;
+    const id = row.querySelector('.sc-status-btn')?.dataset.id;
+    if (!id) return;
+    const timer = setTimeout(() => {
+      const a = getAssignments().find(x => x.id === id);
+      if (a) openModal(a);
+    }, 500);
+    const cancel = () => clearTimeout(timer);
+    row.addEventListener('pointerup',   cancel, { once: true });
+    row.addEventListener('pointerleave', cancel, { once: true });
+  });
+
+  // ── Init ──
+  renderAll();
 })();
 
 // ── Tab switching ──
