@@ -802,8 +802,8 @@
     appTitle: "Progressive Overload Coach",
     units: "kg",
     gyms: [
-      { id: "home", name: "Home Gym" },
-      { id: "comm", name: "Commercial Gym" }
+      { id: "comm", name: "Commercial Gym" },
+      { id: "home", name: "Home Gym" }
     ],
     days: [
       { id: "push", name: "Push" },
@@ -811,19 +811,36 @@
       { id: "legs", name: "Legs" }
     ],
     splitRotation: ["push", "pull", "legs", "rest"],
-    splitAnchor: { date: "2026-05-12", splitId: "rest" },
-    upgradeAtReps: 8,
-    composition: { enabled: true, yearsTraining: 1, windowDays: 30 },
+    splitAnchor: { date: "2026-05-29", splitId: "push" },
+    upgradeAtReps: 10,
     defaultExercises: [
-      { name: "Bench press",       gym: "comm", day: "push", repMin: 5, repMax: 8,  step: 2.5,  startWeight: 60 },
-      { name: "Overhead press",    gym: "comm", day: "push", repMin: 5, repMax: 8,  step: 2.5,  startWeight: 35 },
-      { name: "Tricep pushdown",   gym: "comm", day: "push", repMin: 8, repMax: 12, step: 2.5,  startWeight: 25 },
-      { name: "Pull-ups",          gym: "both", day: "pull", repMin: 5, repMax: 10, step: 1,    startWeight: 0, bw: true },
-      { name: "Barbell row",       gym: "comm", day: "pull", repMin: 6, repMax: 10, step: 2.5,  startWeight: 50 },
-      { name: "Bicep curl",        gym: "comm", day: "pull", repMin: 8, repMax: 12, step: 1.25, startWeight: 15 },
-      { name: "Back squat",        gym: "comm", day: "legs", repMin: 5, repMax: 8,  step: 5,    startWeight: 80 },
-      { name: "Romanian deadlift", gym: "comm", day: "legs", repMin: 6, repMax: 10, step: 5,    startWeight: 60 },
-      { name: "Leg press",         gym: "comm", day: "legs", repMin: 8, repMax: 12, step: 5,    startWeight: 100 }
+      // ── PUSH ──
+      { id:"e01", name:"Incline Smith Bench",  gym:"comm", day:"push", repMin:6,  repMax:10, step:5,   startWeight:185, note:"Clean up sets 2 & 3 before bumping to 195" },
+      { id:"e02", name:"Chest Press Machine",  gym:"comm", day:"push", repMin:10, repMax:12, step:5,   startWeight:180 },
+      { id:"e03", name:"Shoulder Press",       gym:"comm", day:"push", repMin:10, repMax:12, step:5,   startWeight:200 },
+      { id:"e04", name:"Cable Lateral Raise",  gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:30  },
+      { id:"e05", name:"Tricep Pushdown",      gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:100 },
+      { id:"e06", name:"Rear Delt Fly",        gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:30  },
+      { id:"e07", name:"Cable Overhead Ext",   gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:85  },
+      { id:"e08", name:"Pec Deck",             gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:150 },
+      // ── PULL ──
+      { id:"e09", name:"T-Bar Row",            gym:"comm", day:"pull", repMin:6,  repMax:10, step:5,   startWeight:125 },
+      { id:"e10", name:"Chest Supported Row",  gym:"comm", day:"pull", repMin:10, repMax:12, step:2.5, startWeight:70  },
+      { id:"e11", name:"Lat Pulldown",         gym:"comm", day:"pull", repMin:10, repMax:12, step:5,   startWeight:140, note:"Bump to 150 when you hit 10 reps across all 3 sets" },
+      { id:"e12", name:"Incline Curl",         gym:"comm", day:"pull", repMin:10, repMax:12, step:2.5, startWeight:40,  note:"Bumped to 40 this session" },
+      { id:"e13", name:"Seated Hammer Curl",   gym:"comm", day:"pull", repMin:10, repMax:12, step:2.5, startWeight:40  },
+      { id:"e14", name:"Preacher Curl",        gym:"comm", day:"pull", repMin:12, repMax:15, step:2.5, startWeight:50  },
+      { id:"e15", name:"Face Pull",            gym:"comm", day:"pull", repMin:15, repMax:20, step:5,   startWeight:60  },
+      // ── LEGS ──
+      { id:"e16", name:"Hack Squat",           gym:"comm", day:"legs", repMin:6,  repMax:10, step:10,  startWeight:350 },
+      { id:"e17", name:"RDL",                  gym:"comm", day:"legs", repMin:8,  repMax:12, step:5,   startWeight:235, note:"Bumped to 235 this session" },
+      { id:"e18", name:"Lying Leg Curl",       gym:"comm", day:"legs", repMin:10, repMax:12, step:5,   startWeight:170 },
+      { id:"e19", name:"Leg Extension",        gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:190 },
+      { id:"e20", name:"Decline Crunch",       gym:"comm", day:"legs", repMin:12, repMax:20, step:5,   startWeight:45,  note:"Jumped to 45 this session" },
+      { id:"e21", name:"Ab Crunch Machine",    gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:60  },
+      { id:"e22", name:"Side Bends",           gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:70,  note:"Bumped to 70 this session" },
+      { id:"e23", name:"Adductor Machine",     gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:120 },
+      { id:"e24", name:"Calf Raises",          gym:"comm", day:"legs", repMin:15, repMax:20, step:5,   startWeight:145 }
     ]
   };
   </script>
@@ -2461,6 +2478,491 @@ startTicker();
 })();
 </script>
 <script>
+// ── Progressive Overload Coach ──
+(function() {
+  'use strict';
+
+  const get = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+  const set = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  // Seed exercises from CONFIG on first run
+  function getExercises() {
+    let ex = get('po:exercises');
+    if (!ex) {
+      ex = CONFIG.defaultExercises.map(e => ({ ...e }));
+      set('po:exercises', ex);
+    }
+    return ex;
+  }
+  function saveExercises(ex) { set('po:exercises', ex); }
+  function getLogs() { return get('po:logs') || []; }
+  function addLog(entry) { const logs = getLogs(); logs.unshift(entry); set('po:logs', logs); }
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  const units = CONFIG.units || 'kg';
+  const gyms  = CONFIG.gyms  || [];
+  const days  = CONFIG.days  || [];
+
+  let selectedGym  = gyms[0]?.id || 'comm';
+  let selectedDay  = days[0]?.id  || 'push';
+  let selectedExId = '';
+  let selectedReps = null;
+
+  // ── Day pill ──
+  function renderDayPill() {
+    const rotation  = CONFIG.splitRotation || [];
+    const anchor    = CONFIG.splitAnchor   || {};
+    const dateEl    = document.getElementById('dayPillDate');
+    const splitEl   = document.getElementById('dayPillSplit');
+    if (!dateEl || !splitEl) return;
+    const now = new Date();
+    dateEl.textContent = now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    if (anchor.date && rotation.length) {
+      const diff = Math.round((new Date(todayStr()+'T12:00:00') - new Date(anchor.date+'T12:00:00')) / 86400000);
+      const ai   = rotation.indexOf(anchor.splitId);
+      const ti   = ((ai + diff) % rotation.length + rotation.length) % rotation.length;
+      const slug = rotation[ti];
+      const day  = days.find(d => d.id === slug);
+      splitEl.textContent  = day ? day.name.toUpperCase() : slug.toUpperCase();
+      splitEl.className    = 'po-day-split' + (slug === 'rest' ? ' is-rest' : '');
+      if (slug !== 'rest' && days.find(d => d.id === slug)) {
+        selectedDay = slug;
+      }
+    }
+  }
+
+  // ── Gym / Day segmented controls ──
+  function renderSegControls() {
+    const gymSeg = document.getElementById('gymSeg');
+    const daySeg = document.getElementById('daySeg');
+    if (gymSeg) {
+      gymSeg.innerHTML = gyms.map(g =>
+        `<button class="po-seg-btn${g.id === selectedGym ? ' active':''}" data-gym="${g.id}">${g.name}</button>`
+      ).join('');
+      gymSeg.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+        selectedGym = btn.dataset.gym;
+        gymSeg.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderExerciseSelect();
+      }));
+    }
+    if (daySeg) {
+      daySeg.innerHTML = days.map(d =>
+        `<button class="po-seg-btn${d.id === selectedDay ? ' active':''}" data-day="${d.id}">${d.name}</button>`
+      ).join('');
+      daySeg.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+        selectedDay = btn.dataset.day;
+        daySeg.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderExerciseSelect();
+      }));
+    }
+  }
+
+  // ── Exercise select ──
+  function renderExerciseSelect() {
+    const sel = document.getElementById('exSelect');
+    if (!sel) return;
+    const exes = getExercises().filter(e => {
+      const gymOk = e.gym === selectedGym || e.gym === 'both';
+      return gymOk && e.day === selectedDay;
+    });
+    sel.innerHTML = '<option value="">— choose exercise —</option>' +
+      exes.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+    const noEx = document.getElementById('noExMsg');
+    if (noEx) noEx.classList.toggle('hidden', exes.length > 0);
+    selectedExId = ''; selectedReps = null;
+    updateLogForm();
+  }
+
+  function updateLogForm() {
+    const ex = getExercises().find(e => e.id === selectedExId);
+    const logBtn     = document.getElementById('logBtn');
+    const weightInput= document.getElementById('weightInput');
+    const weightField= document.getElementById('weightField');
+    const bwBanner   = document.getElementById('bwBanner');
+
+    // Update unit labels everywhere
+    document.querySelectorAll('#weightUnit,#exWeightUnit,#exStepUnit,#wtUnit,#wtUnitStatic').forEach(el => el.textContent = units);
+
+    if (!ex) {
+      if (logBtn) logBtn.disabled = true;
+      renderRxCard(null); renderStats(null);
+      return;
+    }
+    if (bwBanner)   bwBanner.classList.toggle('show', !!ex.bw);
+    if (weightField) weightField.style.display = ex.bw ? 'none' : '';
+
+    // Pre-fill weight from last log or startWeight
+    const logs    = getLogs().filter(l => l.exId === ex.id);
+    const lastLog = logs[0];
+    if (weightInput && !ex.bw) {
+      weightInput.value = lastLog ? lastLog.weight : (ex.startWeight || '');
+    }
+
+    // Last-set box
+    const box  = document.getElementById('lastSetBox');
+    const val  = document.getElementById('lastSetVal');
+    const date = document.getElementById('lastSetDate');
+    if (box) {
+      box.classList.toggle('show', !!lastLog);
+      if (lastLog) {
+        val.textContent  = ex.bw ? `${lastLog.reps} reps` : `${lastLog.weight}${units} × ${lastLog.reps}`;
+        date.textContent = lastLog.date || '';
+      }
+    }
+
+    renderRepPills(ex);
+    if (logBtn) logBtn.disabled = !(selectedReps && (ex.bw || weightInput?.value));
+    renderRxCard(ex);
+    renderStats(ex);
+    renderHistory(ex);
+  }
+
+  function renderRepPills(ex) {
+    const row = document.getElementById('repsRow');
+    if (!row || !ex) return;
+    const min = ex.repMin || 5;
+    const max = (ex.repMax || 12) + 2;
+    let html = '';
+    for (let r = min; r <= max; r++) {
+      html += `<button class="po-reps-pill${selectedReps === r ? ' active':''}" data-reps="${r}">${r}</button>`;
+    }
+    row.innerHTML = html;
+    row.querySelectorAll('.po-reps-pill').forEach(btn => btn.addEventListener('click', () => {
+      selectedReps = parseInt(btn.dataset.reps);
+      row.querySelectorAll('.po-reps-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const ex2 = getExercises().find(e => e.id === selectedExId);
+      const lb  = document.getElementById('logBtn');
+      const wi  = document.getElementById('weightInput');
+      if (lb) lb.disabled = !(selectedReps && (ex2?.bw || wi?.value));
+    }));
+  }
+
+  function renderRxCard(ex) {
+    const card = document.getElementById('rxCard');
+    if (!card) return;
+    if (!ex) {
+      card.innerHTML = '<p class="po-rx-empty">Select an exercise to see your prescription.</p>';
+      card.className = 'po-rx-card'; return;
+    }
+    const logs     = getLogs().filter(l => l.exId === ex.id);
+    const upgrade  = CONFIG.upgradeAtReps || 10;
+    const curWeight= logs[0]?.weight ?? ex.startWeight;
+    let dir='hold', headline='', reason='', tagCls='hold';
+
+    if (!logs.length) {
+      headline = `Start at ${ex.bw ? 'bodyweight' : curWeight + ' ' + units}`;
+      reason   = `Target ${ex.repMin}–${ex.repMax} reps per set.`;
+    } else {
+      const top = Math.max(...logs.slice(0, 3).map(l => l.reps));
+      if (!ex.bw && top >= upgrade) {
+        dir = 'up'; tagCls = 'up';
+        const next = +curWeight + +ex.step;
+        headline = `Add weight → ${next} ${units}`;
+        reason   = `You hit ${top} reps — time to progress. Add ${ex.step} ${units} next session.`;
+      } else if (top < (ex.repMin || 5)) {
+        dir = 'down'; tagCls = 'down';
+        headline = `Hold at ${curWeight} ${units}`;
+        reason   = `Top set was ${top} reps — below your ${ex.repMin} minimum. Build up before adding weight.`;
+      } else {
+        headline = ex.bw ? `Keep pushing reps` : `Hold at ${curWeight} ${units}`;
+        reason   = `Keep pushing reps toward ${upgrade}+ consistently before moving up.`;
+      }
+    }
+    card.className = `po-rx-card${dir==='up' ? ' po-rx-up' : dir==='down' ? ' po-rx-down' : ''}`;
+    card.innerHTML = `
+      <div class="po-rx-label">Coach says</div>
+      <div class="po-rx-headline">${headline}</div>
+      <span class="po-rx-tag ${tagCls}">${dir==='up' ? '↑ Progress' : dir==='down' ? '↓ Deload' : '→ Hold'}</span>
+      <p class="po-rx-reason">${reason}</p>
+      ${ex.note ? `<p class="po-rx-reason" style="margin-top:8px;font-style:italic;color:var(--warn)">📌 ${ex.note}</p>` : ''}`;
+  }
+
+  function renderStats(ex) {
+    const sTop  = document.getElementById('statTop');
+    const sVol  = document.getElementById('statVol');
+    const sSets = document.getElementById('statSets');
+    if (!sTop) return;
+    if (!ex) { sTop.textContent = sVol.textContent = sSets.textContent = '—'; return; }
+    const all     = getLogs().filter(l => l.exId === ex.id);
+    const today   = all.filter(l => l.date === todayStr());
+    if (!all.length) { sTop.textContent = sVol.textContent = sSets.textContent = '—'; return; }
+    const best = all.reduce((b, l) => ((l.weight||0)*l.reps > (b.weight||0)*b.reps ? l : b), all[0]);
+    sTop.innerHTML  = ex.bw ? `${best.reps}<span class="po-unit">reps</span>` : `${best.weight}<span class="po-unit">${units}</span>`;
+    const vol = today.reduce((s, l) => s + (l.weight||0) * l.reps, 0);
+    sVol.innerHTML  = vol > 0 ? `${vol}<span class="po-unit">${units}</span>` : '—';
+    sSets.textContent = today.length || '—';
+  }
+
+  function renderHistory(ex) {
+    const el = document.getElementById('histList');
+    if (!el || !ex) return;
+    const logs = getLogs().filter(l => l.exId === ex.id).slice(0, 15);
+    if (!logs.length) { el.innerHTML = '<div class="po-empty">No history yet.</div>'; return; }
+    el.innerHTML = logs.map((l, i) => `
+      <div class="po-hist-row">
+        <span class="po-hist-date">${l.date||''}</span>
+        <span class="po-hist-set">${l.bw ? l.reps+' reps' : l.weight+units+' × '+l.reps}</span>
+        <button class="po-hist-del" data-i="${i}">×</button>
+      </div>`).join('');
+    el.querySelectorAll('.po-hist-del').forEach(btn => btn.addEventListener('click', () => {
+      const all = getLogs();
+      const exLogs = all.filter(l => l.exId === ex.id);
+      const target = exLogs[+btn.dataset.i];
+      const idx = all.indexOf(target);
+      if (idx > -1) { all.splice(idx, 1); set('po:logs', all); }
+      renderHistory(ex); renderStats(ex); renderTodayWorkout();
+    }));
+  }
+
+  function renderTodayWorkout() {
+    const list  = document.getElementById('twList');
+    const empty = document.getElementById('twEmpty');
+    const count = document.getElementById('twSetCount');
+    if (!list) return;
+    const todayLogs = getLogs().filter(l => l.date === todayStr());
+    if (count) count.textContent = todayLogs.length;
+    if (!todayLogs.length) {
+      list.innerHTML = '';
+      if (empty) empty.classList.remove('hidden');
+      return;
+    }
+    if (empty) empty.classList.add('hidden');
+    const grouped = {};
+    todayLogs.forEach(l => {
+      if (!grouped[l.exId]) grouped[l.exId] = { name: l.exName, sets: [] };
+      grouped[l.exId].sets.push(l);
+    });
+    list.innerHTML = Object.values(grouped).map(g =>
+      `<li class="po-tw-row">
+        <span class="po-tw-row-name">${g.name}</span>
+        <span class="po-tw-row-meta">${g.sets.length} set${g.sets.length!==1?'s':''}</span>
+      </li>`
+    ).join('');
+  }
+
+  // ── Wire up exercise select ──
+  document.getElementById('exSelect')?.addEventListener('change', function() {
+    selectedExId = this.value; selectedReps = null; updateLogForm();
+  });
+
+  // ── Weight +/− ──
+  const weightInput = document.getElementById('weightInput');
+  document.getElementById('wMinus')?.addEventListener('click', () => {
+    const ex = getExercises().find(e => e.id === selectedExId);
+    const s  = parseFloat(ex?.step || 2.5);
+    if (weightInput) { weightInput.value = Math.max(0, (parseFloat(weightInput.value)||0) - s); updateLogForm(); }
+  });
+  document.getElementById('wPlus')?.addEventListener('click', () => {
+    const ex = getExercises().find(e => e.id === selectedExId);
+    const s  = parseFloat(ex?.step || 2.5);
+    if (weightInput) { weightInput.value = (parseFloat(weightInput.value)||0) + s; updateLogForm(); }
+  });
+  weightInput?.addEventListener('input', () => {
+    const ex = getExercises().find(e => e.id === selectedExId);
+    const lb = document.getElementById('logBtn');
+    if (lb) lb.disabled = !(selectedReps && (ex?.bw || weightInput.value));
+  });
+
+  // ── Log Set ──
+  document.getElementById('logBtn')?.addEventListener('click', () => {
+    const ex = getExercises().find(e => e.id === selectedExId);
+    if (!ex || !selectedReps) return;
+    const weight = ex.bw ? 0 : parseFloat(weightInput?.value) || 0;
+    addLog({ exId: ex.id, exName: ex.name, weight, reps: selectedReps, bw: !!ex.bw, date: todayStr(), ts: Date.now() });
+    selectedReps = null;
+    updateLogForm();
+    renderTodayWorkout();
+    const lb = document.getElementById('logBtn');
+    if (lb) { const orig = lb.textContent; lb.textContent = '✓ Logged!'; setTimeout(() => lb.textContent = orig, 1400); }
+  });
+
+  // ── Add exercise modal ──
+  function populateModalSegs(ex) {
+    const gymSeg = document.getElementById('exGymSeg');
+    const daySeg = document.getElementById('exDaySeg');
+    if (gymSeg) {
+      gymSeg.innerHTML = [...gyms, {id:'both', name:'Both'}].map(g =>
+        `<button data-val="${g.id}" class="${(ex?.gym||gyms[0]?.id)===g.id?'active':''}">${g.name}</button>`
+      ).join('');
+      gymSeg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        gymSeg.querySelectorAll('button').forEach(x => x.classList.remove('active')); b.classList.add('active');
+      }));
+    }
+    if (daySeg) {
+      daySeg.innerHTML = days.map(d =>
+        `<button data-val="${d.id}" class="${(ex?.day||days[0]?.id)===d.id?'active':''}">${d.name}</button>`
+      ).join('');
+      daySeg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        daySeg.querySelectorAll('button').forEach(x => x.classList.remove('active')); b.classList.add('active');
+      }));
+    }
+  }
+
+  let editingExId = null;
+
+  document.getElementById('exAddBtn')?.addEventListener('click', () => {
+    editingExId = null;
+    document.getElementById('exModalTitle').textContent = 'Add Exercise';
+    ['exName','exRepMin','exRepMax','exStartWeight','exStep'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('exBw').checked = false;
+    document.getElementById('exModalDelete').classList.add('hidden');
+    document.getElementById('exWeightField').style.display = '';
+    populateModalSegs(null);
+    document.getElementById('exModal').classList.add('show');
+  });
+
+  document.getElementById('exEditBtn')?.addEventListener('click', () => {
+    const ex = getExercises().find(e => e.id === selectedExId);
+    if (!ex) return;
+    editingExId = ex.id;
+    document.getElementById('exModalTitle').textContent = 'Edit Exercise';
+    document.getElementById('exName').value        = ex.name;
+    document.getElementById('exRepMin').value      = ex.repMin;
+    document.getElementById('exRepMax').value      = ex.repMax;
+    document.getElementById('exStartWeight').value = ex.startWeight;
+    document.getElementById('exStep').value        = ex.step;
+    document.getElementById('exBw').checked        = !!ex.bw;
+    document.getElementById('exWeightField').style.display = ex.bw ? 'none' : '';
+    document.getElementById('exModalDelete').classList.remove('hidden');
+    populateModalSegs(ex);
+    document.getElementById('exModal').classList.add('show');
+  });
+
+  document.getElementById('exEditBtn') && (() => {
+    const exSelect = document.getElementById('exSelect');
+    exSelect?.addEventListener('change', () => {
+      const btn = document.getElementById('exEditBtn');
+      if (btn) btn.disabled = !exSelect.value;
+    });
+  })();
+
+  document.getElementById('exModalCancel')?.addEventListener('click', () => document.getElementById('exModal').classList.remove('show'));
+  document.getElementById('exModalSave')?.addEventListener('click', () => {
+    const name = document.getElementById('exName').value.trim();
+    if (!name) return;
+    const gymBtn = document.querySelector('#exGymSeg button.active');
+    const dayBtn = document.querySelector('#exDaySeg button.active');
+    const bw     = document.getElementById('exBw').checked;
+    const exes   = getExercises();
+    const data   = {
+      name,
+      gym:         gymBtn?.dataset.val || gyms[0]?.id,
+      day:         dayBtn?.dataset.val || days[0]?.id,
+      repMin:      parseInt(document.getElementById('exRepMin').value)      || 6,
+      repMax:      parseInt(document.getElementById('exRepMax').value)      || 12,
+      startWeight: bw ? 0 : parseFloat(document.getElementById('exStartWeight').value) || 0,
+      step:        parseFloat(document.getElementById('exStep').value)      || 2.5,
+      bw
+    };
+    if (editingExId) {
+      const i = exes.findIndex(e => e.id === editingExId);
+      if (i > -1) exes[i] = { ...exes[i], ...data };
+    } else {
+      data.id = 'ex_' + Date.now();
+      exes.push(data);
+    }
+    saveExercises(exes);
+    document.getElementById('exModal').classList.remove('show');
+    renderExerciseSelect();
+  });
+  document.getElementById('exModalDelete')?.addEventListener('click', () => {
+    if (!editingExId) return;
+    if (!confirm('Delete this exercise and all its logs?')) return;
+    saveExercises(getExercises().filter(e => e.id !== editingExId));
+    const logs = getLogs().filter(l => l.exId !== editingExId);
+    set('po:logs', logs);
+    document.getElementById('exModal').classList.remove('show');
+    renderExerciseSelect();
+    renderTodayWorkout();
+  });
+
+  // ── Today's workout done btn ──
+  document.getElementById('twDoneBtn')?.addEventListener('click', function() {
+    this.classList.toggle('is-done');
+    this.textContent = this.classList.contains('is-done') ? '✓ Done!' : 'Mark done';
+  });
+
+  // ── Day pill tap → snap to today's day ──
+  document.getElementById('dayPill')?.addEventListener('click', () => {
+    renderDayPill();
+    const daySeg = document.getElementById('daySeg');
+    if (daySeg) {
+      daySeg.querySelectorAll('button').forEach(b => {
+        b.classList.toggle('active', b.dataset.day === selectedDay);
+      });
+    }
+    renderExerciseSelect();
+  });
+
+  // ── Basic weight tracker ──
+  function getWeightLogs() { return get('po:weight') || []; }
+  function renderWeightDisplay() {
+    const logs  = getWeightLogs();
+    const today = logs.find(l => l.date === todayStr());
+    document.getElementById('wtUnit').textContent       = units;
+    document.getElementById('wtUnitStatic').textContent = units;
+    const numEl   = document.getElementById('wtNum');
+    const emptyEl = document.getElementById('wtEmpty');
+    const lockedEl= document.getElementById('wtLocked');
+    const inputRow= document.getElementById('wtInputRow');
+    const deltaEl = document.getElementById('wtDelta');
+
+    if (today) {
+      if (numEl)    numEl.textContent  = today.w;
+      if (emptyEl)  emptyEl.classList.add('hidden');
+      if (lockedEl) lockedEl.classList.remove('hidden');
+      if (inputRow) inputRow.classList.add('hidden');
+      const lv = document.getElementById('wtLockedValue');
+      if (lv) lv.textContent = `${today.w} ${units}`;
+      const prev = logs.find(l => l.date !== todayStr());
+      if (prev && deltaEl) {
+        const d = (today.w - prev.w).toFixed(1);
+        deltaEl.textContent = `${d > 0 ? '+' : ''}${d} ${units} from last entry`;
+        deltaEl.className   = `wt-delta ${d > 0 ? 'up' : 'down'}`;
+        deltaEl.classList.remove('hidden');
+      }
+    } else {
+      if (numEl)    numEl.textContent  = logs[0]?.w || '—';
+      if (emptyEl)  emptyEl.classList.toggle('hidden', logs.length > 0);
+      if (lockedEl) lockedEl.classList.add('hidden');
+      if (inputRow) inputRow.classList.remove('hidden');
+    }
+  }
+
+  const wtInput   = document.getElementById('wtInput');
+  const wtSaveBtn = document.getElementById('wtSaveBtn');
+  wtSaveBtn?.addEventListener('click', () => {
+    const val = parseFloat(wtInput?.value);
+    if (!val) return;
+    const logs = getWeightLogs();
+    const idx  = logs.findIndex(l => l.date === todayStr());
+    if (idx > -1) logs[idx].w = val; else logs.unshift({ date: todayStr(), w: val });
+    set('po:weight', logs);
+    renderWeightDisplay();
+  });
+  document.getElementById('wtEditBtn')?.addEventListener('click', () => {
+    document.getElementById('wtLocked')?.classList.add('hidden');
+    document.getElementById('wtInputRow')?.classList.remove('hidden');
+    const t = getWeightLogs().find(l => l.date === todayStr());
+    if (wtInput && t) wtInput.value = t.w;
+  });
+
+  // ── Init ──
+  renderDayPill();
+  renderSegControls();
+  renderExerciseSelect();
+  renderTodayWorkout();
+  renderWeightDisplay();
+
+})();
+
 // ── Tab switching ──
 (function() {
   const tabs   = document.querySelectorAll('.dash-tab');
