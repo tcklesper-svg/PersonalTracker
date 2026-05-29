@@ -815,32 +815,32 @@
     upgradeAtReps: 10,
     defaultExercises: [
       // ── PUSH ──
-      { id:"e01", name:"Incline Smith Bench",  gym:"comm", day:"push", repMin:6,  repMax:10, step:5,   startWeight:185, note:"Clean up sets 2 & 3 before bumping to 195" },
-      { id:"e02", name:"Chest Press Machine",  gym:"comm", day:"push", repMin:10, repMax:12, step:5,   startWeight:180 },
-      { id:"e03", name:"Shoulder Press",       gym:"comm", day:"push", repMin:10, repMax:12, step:5,   startWeight:200 },
-      { id:"e04", name:"Cable Lateral Raise",  gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:30  },
-      { id:"e05", name:"Tricep Pushdown",      gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:100 },
-      { id:"e06", name:"Rear Delt Fly",        gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:30  },
-      { id:"e07", name:"Cable Overhead Ext",   gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:85  },
-      { id:"e08", name:"Pec Deck",             gym:"comm", day:"push", repMin:12, repMax:15, step:5,   startWeight:150 },
+      { id:"e01", name:"Incline Smith Bench",  gym:"comm", day:"push", repMin:6,  repMax:10, upgradeAt:8,  step:5,   startWeight:185, note:"Clean up sets 2 & 3 before bumping to 195" },
+      { id:"e02", name:"Chest Press Machine",  gym:"comm", day:"push", repMin:10, repMax:12, upgradeAt:12, step:5,   startWeight:180 },
+      { id:"e03", name:"Shoulder Press",       gym:"comm", day:"push", repMin:10, repMax:12, upgradeAt:12, step:5,   startWeight:200 },
+      { id:"e04", name:"Cable Lateral Raise",  gym:"comm", day:"push", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:30  },
+      { id:"e05", name:"Tricep Pushdown",      gym:"comm", day:"push", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:100 },
+      { id:"e06", name:"Rear Delt Fly",        gym:"comm", day:"push", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:30  },
+      { id:"e07", name:"Cable Overhead Ext",   gym:"comm", day:"push", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:85  },
+      { id:"e08", name:"Pec Deck",             gym:"comm", day:"push", repMin:12, repMax:15, upgradeAt:13, step:5,   startWeight:150 },
       // ── PULL ──
-      { id:"e09", name:"T-Bar Row",            gym:"comm", day:"pull", repMin:6,  repMax:10, step:5,   startWeight:125 },
-      { id:"e10", name:"Chest Supported Row",  gym:"comm", day:"pull", repMin:10, repMax:12, step:2.5, startWeight:70  },
-      { id:"e11", name:"Lat Pulldown",         gym:"comm", day:"pull", repMin:10, repMax:12, step:5,   startWeight:140, note:"Bump to 150 when you hit 10 reps across all 3 sets" },
-      { id:"e12", name:"Incline Curl",         gym:"comm", day:"pull", repMin:10, repMax:12, step:2.5, startWeight:40,  note:"Bumped to 40 this session" },
-      { id:"e13", name:"Seated Hammer Curl",   gym:"comm", day:"pull", repMin:10, repMax:12, step:2.5, startWeight:40  },
-      { id:"e14", name:"Preacher Curl",        gym:"comm", day:"pull", repMin:12, repMax:15, step:2.5, startWeight:50  },
-      { id:"e15", name:"Face Pull",            gym:"comm", day:"pull", repMin:15, repMax:20, step:5,   startWeight:60  },
+      { id:"e09", name:"T-Bar Row",            gym:"comm", day:"pull", repMin:6,  repMax:10, upgradeAt:10, step:5,   startWeight:125 },
+      { id:"e10", name:"Chest Supported Row",  gym:"comm", day:"pull", repMin:10, repMax:12, upgradeAt:12, step:2.5, startWeight:70  },
+      { id:"e11", name:"Lat Pulldown",         gym:"comm", day:"pull", repMin:10, repMax:12, upgradeAt:12, step:5,   startWeight:140, note:"Bump to 150 when you hit 12 reps across all 3 sets" },
+      { id:"e12", name:"Incline Curl",         gym:"comm", day:"pull", repMin:10, repMax:12, upgradeAt:11, step:2.5, startWeight:40,  note:"Bumped to 40 this session" },
+      { id:"e13", name:"Seated Hammer Curl",   gym:"comm", day:"pull", repMin:10, repMax:12, upgradeAt:12, step:2.5, startWeight:40  },
+      { id:"e14", name:"Preacher Curl",        gym:"comm", day:"pull", repMin:12, repMax:15, upgradeAt:13, step:2.5, startWeight:50,  note:"Target 15 on S1, 13 on S2" },
+      { id:"e15", name:"Face Pull",            gym:"comm", day:"pull", repMin:15, repMax:20, upgradeAt:20, step:5,   startWeight:60  },
       // ── LEGS ──
-      { id:"e16", name:"Hack Squat",           gym:"comm", day:"legs", repMin:6,  repMax:10, step:10,  startWeight:350 },
-      { id:"e17", name:"RDL",                  gym:"comm", day:"legs", repMin:8,  repMax:12, step:5,   startWeight:235, note:"Bumped to 235 this session" },
-      { id:"e18", name:"Lying Leg Curl",       gym:"comm", day:"legs", repMin:10, repMax:12, step:5,   startWeight:170 },
-      { id:"e19", name:"Leg Extension",        gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:190 },
-      { id:"e20", name:"Decline Crunch",       gym:"comm", day:"legs", repMin:12, repMax:20, step:5,   startWeight:45,  note:"Jumped to 45 this session" },
-      { id:"e21", name:"Ab Crunch Machine",    gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:60  },
-      { id:"e22", name:"Side Bends",           gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:70,  note:"Bumped to 70 this session" },
-      { id:"e23", name:"Adductor Machine",     gym:"comm", day:"legs", repMin:12, repMax:15, step:5,   startWeight:120 },
-      { id:"e24", name:"Calf Raises",          gym:"comm", day:"legs", repMin:15, repMax:20, step:5,   startWeight:145 }
+      { id:"e16", name:"Hack Squat",           gym:"comm", day:"legs", repMin:6,  repMax:10, upgradeAt:10, step:10,  startWeight:350 },
+      { id:"e17", name:"RDL",                  gym:"comm", day:"legs", repMin:8,  repMax:12, upgradeAt:10, step:5,   startWeight:235, note:"Bumped to 235 this session" },
+      { id:"e18", name:"Lying Leg Curl",       gym:"comm", day:"legs", repMin:10, repMax:12, upgradeAt:13, step:5,   startWeight:170 },
+      { id:"e19", name:"Leg Extension",        gym:"comm", day:"legs", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:190 },
+      { id:"e20", name:"Decline Crunch",       gym:"comm", day:"legs", repMin:12, repMax:20, upgradeAt:15, step:5,   startWeight:45,  note:"Jumped to 45 this session" },
+      { id:"e21", name:"Ab Crunch Machine",    gym:"comm", day:"legs", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:60  },
+      { id:"e22", name:"Side Bends",           gym:"comm", day:"legs", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:70,  note:"Bumped to 70 this session" },
+      { id:"e23", name:"Adductor Machine",     gym:"comm", day:"legs", repMin:12, repMax:15, upgradeAt:15, step:5,   startWeight:120 },
+      { id:"e24", name:"Calf Raises",          gym:"comm", day:"legs", repMin:15, repMax:20, upgradeAt:20, step:5,   startWeight:145 }
     ]
   };
   </script>
@@ -1578,6 +1578,7 @@
             <input type="number" id="exRepMax" placeholder="8" inputmode="numeric">
           </div>
         </div>
+        <div class="po-field"><label>Upgrade when you hit (reps)</label><input type="number" id="exUpgradeAt" placeholder="e.g. 10" inputmode="numeric"></div>
         <div class="po-field" id="exWeightField"><label>Starting weight (<span id="exWeightUnit">kg</span>)</label><input type="number" id="exStartWeight" placeholder="60" inputmode="decimal"></div>
         <div class="po-field"><label>Weight step (<span id="exStepUnit">kg</span>)</label><input type="number" id="exStep" placeholder="2.5" inputmode="decimal"></div>
         <label class="po-bw-toggle"><input type="checkbox" id="exBw"> Bodyweight movement (no weight)</label>
@@ -2485,7 +2486,13 @@ startTicker();
   const get = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
   const set = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-  // Seed exercises from CONFIG on first run
+  // Re-seed exercises when CONFIG version bumps (adds upgradeAt)
+  const EX_VERSION = 2;
+  if (get('po:exVersion') !== EX_VERSION) {
+    set('po:exercises', null);
+    set('po:exVersion', EX_VERSION);
+  }
+
   function getExercises() {
     let ex = get('po:exercises');
     if (!ex) {
@@ -2652,7 +2659,7 @@ startTicker();
       card.className = 'po-rx-card'; return;
     }
     const logs     = getLogs().filter(l => l.exId === ex.id);
-    const upgrade  = CONFIG.upgradeAtReps || 10;
+    const upgrade  = ex.upgradeAt || CONFIG.upgradeAtReps || 10;
     const curWeight= logs[0]?.weight ?? ex.startWeight;
     let dir='hold', headline='', reason='', tagCls='hold';
 
@@ -2810,7 +2817,7 @@ startTicker();
   document.getElementById('exAddBtn')?.addEventListener('click', () => {
     editingExId = null;
     document.getElementById('exModalTitle').textContent = 'Add Exercise';
-    ['exName','exRepMin','exRepMax','exStartWeight','exStep'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    ['exName','exRepMin','exRepMax','exUpgradeAt','exStartWeight','exStep'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     document.getElementById('exBw').checked = false;
     document.getElementById('exModalDelete').classList.add('hidden');
     document.getElementById('exWeightField').style.display = '';
@@ -2826,6 +2833,7 @@ startTicker();
     document.getElementById('exName').value        = ex.name;
     document.getElementById('exRepMin').value      = ex.repMin;
     document.getElementById('exRepMax').value      = ex.repMax;
+    document.getElementById('exUpgradeAt').value   = ex.upgradeAt || '';
     document.getElementById('exStartWeight').value = ex.startWeight;
     document.getElementById('exStep').value        = ex.step;
     document.getElementById('exBw').checked        = !!ex.bw;
@@ -2857,6 +2865,7 @@ startTicker();
       day:         dayBtn?.dataset.val || days[0]?.id,
       repMin:      parseInt(document.getElementById('exRepMin').value)      || 6,
       repMax:      parseInt(document.getElementById('exRepMax').value)      || 12,
+      upgradeAt:   parseInt(document.getElementById('exUpgradeAt').value)   || undefined,
       startWeight: bw ? 0 : parseFloat(document.getElementById('exStartWeight').value) || 0,
       step:        parseFloat(document.getElementById('exStep').value)      || 2.5,
       bw
