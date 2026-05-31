@@ -3792,7 +3792,6 @@ window.addEventListener('sync:dashboard', () => {
   'use strict';
 
   const ICAL_URL = 'https://calendar.google.com/calendar/ical/tcklesper%40gmail.com/public/basic.ics';
-  const PROXY    = 'https://corsproxy.io/?';
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -3918,23 +3917,41 @@ window.addEventListener('sync:dashboard', () => {
     if (syncEl) syncEl.textContent = `Last synced ${new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })}`;
   }
 
+  const PROXIES = [
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+  ];
+
   async function loadCalendar() {
     const todayEl    = document.getElementById('calToday');
     const upcomingEl = document.getElementById('calUpcoming');
     if (todayEl)    todayEl.innerHTML    = '<div class="cal-loading">Loading…</div>';
-    if (upcomingEl) upcomingEl.innerHTML = '<div class="cal-loading">Loading…</div>';
+    if (upcomingEl) upcomingEl.style.display = 'none';
 
-    try {
-      const res  = await fetch(PROXY + encodeURIComponent(ICAL_URL));
-      const text = await res.text();
-      const events = parseIcal(text);
-      events.sort((a, b) => a.start - b.start);
-      renderEvents(events);
-    } catch (e) {
-      const msg = '<div class="cal-empty">Could not load calendar. Make sure it\'s set to public in Google Calendar settings.</div>';
-      if (todayEl)    todayEl.innerHTML    = msg;
-      if (upcomingEl) upcomingEl.innerHTML = '';
+    let text = null;
+    for (const proxy of PROXIES) {
+      try {
+        const res = await fetch(proxy(ICAL_URL));
+        const raw = await res.text();
+        if (raw.includes('BEGIN:VCALENDAR')) { text = raw; break; }
+      } catch {}
     }
+
+    if (!text) {
+      if (todayEl) todayEl.innerHTML = '<div class="cal-empty">Could not load calendar — Google may still be propagating the public setting (can take a few hours). Tap Refresh to try again.</div>';
+      return;
+    }
+
+    const events = parseIcal(text);
+    events.sort((a, b) => a.start - b.start);
+
+    if (!events.length) {
+      if (todayEl) todayEl.innerHTML = '<div class="cal-empty">Calendar loaded but no upcoming events found.</div>';
+      return;
+    }
+
+    renderEvents(events);
   }
 
   document.getElementById('calRefreshBtn')?.addEventListener('click', loadCalendar);
