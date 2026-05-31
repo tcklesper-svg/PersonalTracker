@@ -1125,6 +1125,7 @@
     }
     .po-reps-pill:hover { background:rgba(255,255,255,0.06); color:var(--text-1); }
     .po-reps-pill.active { background:linear-gradient(180deg,#ffffff 0%,#e8e5dd 100%); color:#0a0a0b; border-color:transparent; font-weight:800; }
+    .po-reps-in-range { border-color:rgba(129,140,248,0.35); color:var(--text-1); }
     .po-btn-primary {
       width:100%; padding:16px; border:1px solid rgba(255,255,255,0.85);
       background:linear-gradient(180deg,#ffffff 0%,#e8e5dd 100%); color:#0a0a0b;
@@ -1316,6 +1317,33 @@
     .po-set-row .po-mini-btn:hover { color:var(--bad); }
     .po-add-row-btn { width:100%; margin-top:6px; padding:12px; background:rgba(255,255,255,0.025); border:1px dashed var(--border); color:var(--text-2); border-radius:8px; cursor:pointer; font-family:inherit; font-size:13px; min-height:48px; -webkit-tap-highlight-color:transparent; }
     .po-add-row-btn:hover { background:rgba(255,255,255,0.05); color:var(--text-1); }
+
+    /* Rest timer */
+    .po-timer { display:none; margin-top:12px; background:rgba(129,140,248,0.08); border:1px solid rgba(129,140,248,0.25); border-radius:12px; padding:16px; text-align:center; }
+    .po-timer.active { display:block; }
+    .po-timer-label { font-size:10px; color:var(--text-3); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:4px; }
+    .po-timer-num { font-size:38px; font-weight:700; font-variant-numeric:tabular-nums; color:#818cf8; line-height:1; margin-bottom:10px; }
+    .po-timer-skip { background:transparent; border:1px solid rgba(255,255,255,0.12); color:var(--text-2); border-radius:8px; padding:9px 18px; font-family:inherit; font-size:13px; cursor:pointer; min-height:44px; -webkit-tap-highlight-color:transparent; }
+
+    /* Exercise graph */
+    .po-graph-wrap { margin-top:14px; display:none; }
+    .po-graph-label { font-size:10px; color:var(--text-3); margin-bottom:6px; letter-spacing:0.10em; text-transform:uppercase; font-family:var(--font-mono); }
+    .po-graph-svg { width:100%; height:80px; display:block; overflow:visible; }
+
+    /* Set detail chips */
+    .po-tw-sets { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+    .po-tw-set-chip { font-size:11px; font-family:var(--font-mono); color:var(--text-3); background:rgba(255,255,255,0.04); padding:3px 8px; border-radius:999px; font-variant-numeric:tabular-nums; }
+    .po-tw-set-chip.is-top { color:var(--good); background:rgba(110,231,183,0.08); }
+
+    /* Session evaluation */
+    .po-eval { display:none; margin-top:12px; padding:14px 16px; background:rgba(110,231,183,0.05); border:1px solid rgba(110,231,183,0.14); border-radius:12px; }
+    .po-eval.show { display:block; }
+    .po-eval-eyebrow { font-size:10px; letter-spacing:0.16em; font-weight:700; text-transform:uppercase; color:var(--good); margin-bottom:8px; }
+    .po-eval-rating { font-size:18px; font-weight:700; color:var(--text-1); margin-bottom:8px; }
+    .po-eval-stats { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+    .po-eval-stat { font-size:12px; font-family:var(--font-mono); background:rgba(255,255,255,0.04); padding:3px 10px; border-radius:999px; color:var(--text-2); font-variant-numeric:tabular-nums; }
+    .po-eval-stat.good { background:rgba(110,231,183,0.12); color:var(--good); }
+    .po-eval-line { font-size:13px; line-height:1.5; color:var(--text-2); margin-top:4px; }
   </style>
 
   <div class="po-shell">
@@ -1443,6 +1471,11 @@
           </div>
         </div>
         <button class="po-btn-primary" id="logBtn" disabled>Log Set</button>
+        <div class="po-timer" id="poRestTimer">
+          <div class="po-timer-label">Rest timer</div>
+          <div class="po-timer-num" id="poTimerNum">1:30</div>
+          <button class="po-timer-skip" id="poTimerSkip">Skip rest</button>
+        </div>
       </div>
       <div class="po-sub-section">
         <div class="po-sub-title">Coach says</div>
@@ -1466,6 +1499,10 @@
           </svg>
           <div class="po-spark-empty hidden" id="sparkEmpty">No history yet</div>
         </div>
+        <div class="po-graph-wrap" id="poGraphWrap">
+          <div class="po-graph-label" id="poGraphLabel">Top weight per session</div>
+          <svg class="po-graph-svg" id="poGraphSvg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg>
+        </div>
       </div>
       <div class="po-sub-section">
         <div class="po-sub-title">History</div>
@@ -1487,6 +1524,10 @@
       </div>
       <ul class="po-tw-list" id="twList"></ul>
       <div class="po-tw-empty hidden" id="twEmpty">Log a set above to start today's workout.</div>
+      <div class="po-eval" id="poEval">
+        <div class="po-eval-eyebrow">Session Report</div>
+        <div id="poEvalContent"></div>
+      </div>
       <button class="po-tw-past-toggle" id="twPastToggle" aria-expanded="false">
         Past workouts <span class="po-tw-past-count" id="twPastCount">0</span>
         <span class="po-tw-past-arrow">▾</span>
@@ -2916,16 +2957,16 @@ window.addEventListener('sync:dashboard', () => {
     renderRxCard(ex);
     renderStats(ex);
     renderHistory(ex);
+    renderExerciseGraph(ex);
   }
 
   function renderRepPills(ex) {
     const row = document.getElementById('repsRow');
     if (!row || !ex) return;
-    const min = ex.repMin || 5;
-    const max = (ex.repMax || 12) + 2;
     let html = '';
-    for (let r = min; r <= max; r++) {
-      html += `<button class="po-reps-pill${selectedReps === r ? ' active':''}" data-reps="${r}">${r}</button>`;
+    for (let r = 1; r <= 20; r++) {
+      const inRange = r >= (ex.repMin||1) && r <= (ex.repMax||20);
+      html += `<button class="po-reps-pill${selectedReps === r ? ' active':''}${inRange?' po-reps-in-range':''}" data-reps="${r}">${r}</button>`;
     }
     row.innerHTML = html;
     row.querySelectorAll('.po-reps-pill').forEach(btn => btn.addEventListener('click', () => {
@@ -2936,6 +2977,7 @@ window.addEventListener('sync:dashboard', () => {
       const lb  = document.getElementById('logBtn');
       const wi  = document.getElementById('weightInput');
       if (lb) lb.disabled = !(selectedReps && (ex2?.bw || wi?.value));
+      renderRxCard(ex2);
     }));
   }
 
@@ -2946,37 +2988,55 @@ window.addEventListener('sync:dashboard', () => {
       card.innerHTML = '<p class="po-rx-empty">Select an exercise to see your prescription.</p>';
       card.className = 'po-rx-card'; return;
     }
-    const logs     = getLogs().filter(l => l.exId === ex.id);
-    const upgrade  = ex.upgradeAt || CONFIG.upgradeAtReps || 10;
-    const curWeight= logs[0]?.weight ?? ex.startWeight;
-    let dir='hold', headline='', reason='', tagCls='hold';
 
-    if (!logs.length) {
-      headline = `Start at ${ex.bw ? 'bodyweight' : curWeight + ' ' + units}`;
-      reason   = `Target ${ex.repMin}–${ex.repMax} reps per set.`;
-    } else {
-      const top = Math.max(...logs.slice(0, 3).map(l => l.reps));
-      if (!ex.bw && top >= upgrade) {
-        dir = 'up'; tagCls = 'up';
-        const next = +curWeight + +ex.step;
-        headline = `Add weight → ${next} ${units}`;
-        reason   = `You hit ${top} reps — time to progress. Add ${ex.step} ${units} next session.`;
-      } else if (top < (ex.repMin || 5)) {
-        dir = 'down'; tagCls = 'down';
-        headline = `Hold at ${curWeight} ${units}`;
-        reason   = `Top set was ${top} reps — below your ${ex.repMin} minimum. Build up before adding weight.`;
-      } else {
-        headline = ex.bw ? `Keep pushing reps` : `Hold at ${curWeight} ${units}`;
-        reason   = `Keep pushing reps toward ${upgrade}+ consistently before moving up.`;
-      }
+    const allLogs   = getLogs().filter(l => l.exId === ex.id);
+    const todaySets = allLogs.filter(l => l.date === todayStr()).sort((a, b) => a.ts - b.ts);
+    const upgrade   = ex.upgradeAt || ex.repMax || CONFIG.upgradeAtReps || 10;
+    const curWeight = allLogs.filter(l => !l.bw).sort((a, b) => b.ts - a.ts)[0]?.weight ?? ex.startWeight;
+    const nextWeight= parseFloat(curWeight) + parseFloat(ex.step || 2.5);
+
+    // Fatigue: every set this session had fewer reps than the one before
+    let fatigued = false;
+    if (todaySets.length >= 2) {
+      fatigued = todaySets.every((s, i) => i === 0 || s.reps < todaySets[i - 1].reps);
     }
-    card.className = `po-rx-card${dir==='up' ? ' po-rx-up' : dir==='down' ? ' po-rx-down' : ''}`;
+
+    // Already failed at the next weight
+    const failedHigher = !ex.bw && allLogs.some(l => l.weight >= nextWeight && l.reps < (ex.repMin || 1));
+
+    let dir = 'hold', headline = '', reason = '', tagCls = 'hold';
+
+    if (!allLogs.length) {
+      headline = `Start at ${ex.bw ? 'bodyweight' : curWeight + ' ' + units}`;
+      reason   = `Target ${ex.repMin}–${ex.repMax} reps. Hit ${upgrade}+ to progress.`;
+    } else if (fatigued) {
+      dir = 'down'; tagCls = 'down';
+      headline = `Fatigue — hold at ${curWeight} ${units}`;
+      reason   = `Reps dropped every set: ${todaySets.map(s => s.reps).join(' → ')}. Don't add weight when you're fading.`;
+    } else if (failedHigher) {
+      headline = `Build at ${curWeight} ${units} first`;
+      reason   = `You've attempted ${nextWeight} ${units} and fallen short before. Hit ${upgrade}+ here consistently before stepping up.`;
+    } else if (todaySets.length && Math.max(...todaySets.map(l => l.reps)) >= upgrade) {
+      dir = 'up'; tagCls = 'up';
+      headline = `Next session → ${nextWeight} ${units}`;
+      reason   = `You hit ${Math.max(...todaySets.map(l => l.reps))} reps — that's your target. Add ${ex.step} ${units} next time.`;
+    } else if (todaySets.length) {
+      const topToday = Math.max(...todaySets.map(l => l.reps));
+      headline = ex.bw ? `Keep building` : `Hold at ${curWeight} ${units}`;
+      reason   = `Top set: ${topToday} reps. Need ${upgrade} to progress — ${upgrade - topToday} more.`;
+    } else {
+      const topAll = Math.max(...allLogs.map(l => l.reps));
+      headline = ex.bw ? `Working set` : `Working weight: ${curWeight} ${units}`;
+      reason   = `Last top set: ${topAll} reps. Hit ${upgrade}+ to unlock next weight.`;
+    }
+
+    card.className = `po-rx-card${dir==='up'?' po-rx-up':dir==='down'?' po-rx-down':''}`;
     card.innerHTML = `
       <div class="po-rx-label">Coach says</div>
       <div class="po-rx-headline">${headline}</div>
-      <span class="po-rx-tag ${tagCls}">${dir==='up' ? '↑ Progress' : dir==='down' ? '↓ Deload' : '→ Hold'}</span>
+      <span class="po-rx-tag ${tagCls}">${dir==='up'?'↑ Progress':dir==='down'?'↓ Fatigue':'→ Hold'}</span>
       <p class="po-rx-reason">${reason}</p>
-      ${ex.note ? `<p class="po-rx-reason" style="margin-top:8px;font-style:italic;color:var(--warn)">📌 ${ex.note}</p>` : ''}`;
+      ${ex.note?`<p class="po-rx-reason" style="margin-top:8px;font-style:italic;color:var(--warn)">📌 ${ex.note}</p>`:''}`;
   }
 
   function renderStats(ex) {
@@ -3021,7 +3081,7 @@ window.addEventListener('sync:dashboard', () => {
     const empty = document.getElementById('twEmpty');
     const count = document.getElementById('twSetCount');
     if (!list) return;
-    const todayLogs = getLogs().filter(l => l.date === todayStr());
+    const todayLogs = getLogs().filter(l => l.date === todayStr()).sort((a, b) => a.ts - b.ts);
     if (count) count.textContent = todayLogs.length;
     if (!todayLogs.length) {
       list.innerHTML = '';
@@ -3034,13 +3094,146 @@ window.addEventListener('sync:dashboard', () => {
       if (!grouped[l.exId]) grouped[l.exId] = { name: l.exName, sets: [] };
       grouped[l.exId].sets.push(l);
     });
-    list.innerHTML = Object.values(grouped).map(g =>
-      `<li class="po-tw-row">
-        <span class="po-tw-row-name">${g.name}</span>
-        <span class="po-tw-row-meta">${g.sets.length} set${g.sets.length!==1?'s':''}</span>
-      </li>`
-    ).join('');
+    list.innerHTML = Object.values(grouped).map(g => {
+      const topReps = Math.max(...g.sets.map(s => s.reps));
+      const chips = g.sets.map((s, i) => {
+        const isTop = s.reps === topReps;
+        return `<span class="po-tw-set-chip${isTop?' is-top':''}">S${i+1}: ${s.bw ? s.reps+'r' : s.weight+units+'×'+s.reps}</span>`;
+      }).join('');
+      return `<li class="po-tw-row" style="flex-direction:column;align-items:flex-start;gap:5px;padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+          <span class="po-tw-row-name">${g.name}</span>
+          <span class="po-tw-row-meta">${g.sets.length} sets</span>
+        </div>
+        <div class="po-tw-sets">${chips}</div>
+      </li>`;
+    }).join('');
   }
+
+  // ── Exercise graph ──
+  function renderExerciseGraph(ex) {
+    const wrap  = document.getElementById('poGraphWrap');
+    const svg   = document.getElementById('poGraphSvg');
+    const label = document.getElementById('poGraphLabel');
+    if (!wrap || !svg) return;
+    if (!ex || ex.bw) { wrap.style.display = 'none'; return; }
+
+    const logs = getLogs().filter(l => l.exId === ex.id && !l.bw);
+    const byDate = {};
+    logs.forEach(l => {
+      if (!byDate[l.date] || l.weight > byDate[l.date]) byDate[l.date] = l.weight;
+    });
+    const sessions = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0])).slice(-12);
+    if (sessions.length < 2) { wrap.style.display = 'none'; return; }
+
+    wrap.style.display = 'block';
+    const W = 300, H = 80, P = 12;
+    const weights = sessions.map(s => s[1]);
+    const lo = Math.min(...weights), hi = Math.max(...weights);
+    const range = hi - lo || 1;
+    const pts = sessions.map(([, w], i) => ({
+      x: P + (i / (sessions.length - 1)) * (W - 2*P),
+      y: H - P - ((w - lo) / range) * (H - 2*P),
+      w
+    }));
+    const line = pts.map((p, i) => `${i?'L':'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('');
+    const fill = `${line}L${pts[pts.length-1].x.toFixed(1)},${H}L${pts[0].x.toFixed(1)},${H}Z`;
+    svg.innerHTML = `<defs><linearGradient id="pgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${fill}" fill="url(#pgGrad)"/>
+    <path d="${line}" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map((p, i) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${i===pts.length-1?4:2.5}" fill="${i===pts.length-1?'#fff':'#818cf8'}"/>`).join('')}`;
+
+    const delta = weights[weights.length-1] - weights[0];
+    if (label) label.textContent = `Progress · ${sessions.length} sessions${delta>0?` · +${delta}${units}`:delta<0?` · ${delta}${units}`:''}`;
+  }
+
+  // ── Session evaluation ──
+  function generateEvaluation() {
+    const todayLogs = getLogs().filter(l => l.date === todayStr()).sort((a, b) => a.ts - b.ts);
+    if (!todayLogs.length) return null;
+    const exes = getExercises();
+    const grouped = {};
+    todayLogs.forEach(l => {
+      if (!grouped[l.exId]) grouped[l.exId] = { name: l.exName, sets: [], ex: exes.find(e => e.id === l.exId) };
+      grouped[l.exId].sets.push(l);
+    });
+    const totalSets = todayLogs.length;
+    const totalVol  = todayLogs.reduce((s, l) => s + (l.weight||0)*l.reps, 0);
+    const exCount   = Object.keys(grouped).length;
+    const highlights = [], concerns = [];
+    let prs = 0;
+    Object.values(grouped).forEach(({ name, sets, ex }) => {
+      // Fatigue check
+      if (sets.length >= 2 && sets.every((s, i) => i===0 || s.reps < sets[i-1].reps))
+        concerns.push(`${name}: reps dropped each set`);
+      // PR check (best volume set vs history)
+      const allPrev = getLogs().filter(l => l.exId === sets[0].exId && l.date !== todayStr());
+      const todayBest = Math.max(...sets.map(s => (s.weight||0)*s.reps));
+      const prevBest  = allPrev.length ? Math.max(...allPrev.map(l => (l.weight||0)*l.reps)) : 0;
+      if (todayBest > prevBest && prevBest > 0) { prs++; highlights.push(`${name} — new best`); }
+      // Ready to bump
+      if (ex) {
+        const upgrade = ex.upgradeAt || ex.repMax || 10;
+        if (Math.max(...sets.map(s => s.reps)) >= upgrade)
+          highlights.push(`${name} — ready to bump`);
+      }
+    });
+    const rating = concerns.length === 0 && prs > 0 ? '💪 Strong session' :
+                   concerns.length === 0 ? '✅ Solid session' :
+                   concerns.length <= 1  ? '📊 Good overall' : '😤 Tough day';
+    return { rating, totalSets, totalVol, exCount, prs, highlights, concerns };
+  }
+
+  function showEvaluation() {
+    const evalEl   = document.getElementById('poEval');
+    const contentEl= document.getElementById('poEvalContent');
+    if (!evalEl || !contentEl) return;
+    const ev = generateEvaluation();
+    if (!ev) return;
+    evalEl.classList.add('show');
+    let html = `<div class="po-eval-rating">${ev.rating}</div>`;
+    html += `<div class="po-eval-stats">
+      <span class="po-eval-stat">${ev.totalSets} sets</span>
+      ${ev.totalVol > 0 ? `<span class="po-eval-stat">${ev.totalVol.toLocaleString()} ${units}</span>` : ''}
+      <span class="po-eval-stat">${ev.exCount} exercises</span>
+      ${ev.prs > 0 ? `<span class="po-eval-stat good">${ev.prs} PR${ev.prs>1?'s':''}</span>` : ''}
+    </div>`;
+    if (ev.highlights.length) html += `<div class="po-eval-line" style="color:var(--good)">↑ ${ev.highlights.slice(0,3).join(' · ')}</div>`;
+    if (ev.concerns.length)   html += `<div class="po-eval-line" style="color:var(--warn);margin-top:4px">⚠ ${ev.concerns.slice(0,3).join(' · ')}</div>`;
+    contentEl.innerHTML = html;
+  }
+
+  // ── Rest timer ──
+  let restTimerInterval = null;
+  const REST_SECONDS = get('po:restSeconds') || 90;
+
+  function startRestTimer() {
+    const timerEl = document.getElementById('poRestTimer');
+    const numEl   = document.getElementById('poTimerNum');
+    if (!timerEl || !numEl) return;
+    clearInterval(restTimerInterval);
+    let remaining = get('po:restSeconds') || 90;
+    const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+    numEl.textContent = fmt(remaining);
+    timerEl.classList.add('active');
+    restTimerInterval = setInterval(() => {
+      remaining--;
+      numEl.textContent = fmt(remaining);
+      if (remaining <= 0) {
+        clearInterval(restTimerInterval);
+        timerEl.classList.remove('active');
+        try { navigator.vibrate && navigator.vibrate([200,100,200]); } catch {}
+      }
+    }, 1000);
+  }
+
+  document.getElementById('poTimerSkip')?.addEventListener('click', () => {
+    clearInterval(restTimerInterval);
+    document.getElementById('poRestTimer')?.classList.remove('active');
+  });
 
   // ── Wire up exercise select ──
   document.getElementById('exSelect')?.addEventListener('change', function() {
@@ -3074,6 +3267,7 @@ window.addEventListener('sync:dashboard', () => {
     selectedReps = null;
     updateLogForm();
     renderTodayWorkout();
+    startRestTimer();
     const lb = document.getElementById('logBtn');
     if (lb) { const orig = lb.textContent; lb.textContent = '✓ Logged!'; setTimeout(() => lb.textContent = orig, 1400); }
   });
@@ -3184,6 +3378,8 @@ window.addEventListener('sync:dashboard', () => {
   document.getElementById('twDoneBtn')?.addEventListener('click', function() {
     this.classList.toggle('is-done');
     this.textContent = this.classList.contains('is-done') ? '✓ Done!' : 'Mark done';
+    if (this.classList.contains('is-done')) showEvaluation();
+    else { document.getElementById('poEval')?.classList.remove('show'); }
   });
 
   // ── Day pill tap → snap to today's day ──
