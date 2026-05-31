@@ -789,6 +789,27 @@
     .dash-tab-panel { display: none; }
     .dash-tab-panel.active { display: block; }
 
+    /* ── Calendar ── */
+    .cal-section { margin-bottom: 16px; }
+    .cal-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px; margin-bottom: 8px; }
+    .cal-empty { font-size: 13px; color: rgba(255,255,255,0.3); font-style: italic; text-align: center; padding: 14px 0; }
+    .cal-loading { font-size: 13px; color: rgba(255,255,255,0.3); text-align: center; padding: 14px 0; }
+    .cal-event { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .cal-event:last-child { border-bottom: none; }
+    .cal-event-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; min-width: 52px; padding-top: 2px; flex-shrink: 0; }
+    .cal-event-dot { width: 8px; height: 8px; border-radius: 50%; background: #818cf8; flex-shrink: 0; margin-top: 5px; }
+    .cal-event-body { flex: 1; min-width: 0; }
+    .cal-event-title { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.3; margin-bottom: 2px; }
+    .cal-event-meta { font-size: 11px; color: var(--text-tertiary); }
+    .cal-event.is-now .cal-event-dot { background: var(--success); box-shadow: 0 0 6px rgba(107,227,164,0.6); }
+    .cal-event.is-now .cal-event-title { color: var(--success); }
+    .cal-event.is-past { opacity: 0.4; }
+    .cal-day-header { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin: 14px 0 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .cal-day-header:first-child { margin-top: 0; }
+    .cal-refresh-btn { background: transparent; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--text-tertiary); font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer; padding: 7px 14px; -webkit-tap-highlight-color: transparent; }
+    .cal-refresh-btn:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .cal-sync-time { font-size: 11px; color: rgba(255,255,255,0.25); }
+
     /* ── Portrait phone fixes ── */
     @media (max-width: 520px) {
       .goal-input-wrap { flex-wrap: wrap; }
@@ -855,10 +876,21 @@
     <button class="dash-tab active" data-tab="dashboard" role="tab" aria-selected="true">Dashboard</button>
     <button class="dash-tab" data-tab="training" role="tab" aria-selected="false">Training</button>
     <button class="dash-tab" data-tab="school" role="tab" aria-selected="false">School</button>
-    <button class="dash-tab" data-tab="calendar" role="tab" aria-selected="false">Calendar</button>
   </div>
 
   <div class="dash-tab-panel active" id="tab-dashboard">
+
+  <!-- Calendar -->
+  <div class="cal-section">
+    <div class="cal-card" id="calToday" style="margin-bottom:8px">
+      <div class="cal-loading">Loading calendar…</div>
+    </div>
+    <div class="cal-card" id="calUpcoming" style="display:none"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="cal-sync-time" id="calSyncTime" style="text-align:left"></div>
+      <button class="cal-refresh-btn" id="calRefreshBtn" style="width:auto;margin-top:0;padding:7px 14px;font-size:11px">↻ Refresh</button>
+    </div>
+  </div>
 
   <!-- Goal Ticker -->
   <div class="ticker-row">
@@ -1943,97 +1975,6 @@
 
   </div><!-- /tab-school -->
 
-  <!-- ═══════════════ CALENDAR TAB ═══════════════ -->
-  <div class="dash-tab-panel" id="tab-calendar">
-  <style>
-    .cal-section { margin-bottom: 16px; }
-    .cal-eyebrow {
-      font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
-      text-transform: uppercase; color: rgba(255,255,255,0.4);
-      margin-bottom: 12px;
-    }
-    .cal-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px; padding: 18px;
-      margin-bottom: 12px;
-    }
-    .cal-empty {
-      font-size: 13px; color: rgba(255,255,255,0.3);
-      font-style: italic; text-align: center; padding: 20px 0;
-    }
-    .cal-loading {
-      font-size: 13px; color: rgba(255,255,255,0.3);
-      text-align: center; padding: 20px 0;
-    }
-    .cal-event {
-      display: flex; gap: 14px; align-items: flex-start;
-      padding: 11px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .cal-event:last-child { border-bottom: none; }
-    .cal-event-time {
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      font-size: 11px; color: rgba(255,255,255,0.4);
-      font-variant-numeric: tabular-nums;
-      min-width: 52px; padding-top: 2px;
-      flex-shrink: 0;
-    }
-    .cal-event-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #818cf8; flex-shrink: 0; margin-top: 5px;
-    }
-    .cal-event-body { flex: 1; min-width: 0; }
-    .cal-event-title {
-      font-size: 14px; font-weight: 600; color: #fff;
-      line-height: 1.3; margin-bottom: 2px;
-    }
-    .cal-event-meta {
-      font-size: 11px; color: rgba(255,255,255,0.4);
-    }
-    .cal-event.is-now .cal-event-dot { background: #6ee7b7; box-shadow: 0 0 6px rgba(110,231,183,0.6); }
-    .cal-event.is-now .cal-event-title { color: #6ee7b7; }
-    .cal-event.is-past { opacity: 0.4; }
-    .cal-day-header {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-      text-transform: uppercase; color: rgba(255,255,255,0.5);
-      margin: 16px 0 8px; padding-bottom: 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .cal-day-header:first-child { margin-top: 0; }
-    .cal-refresh-btn {
-      display: flex; align-items: center; justify-content: center;
-      gap: 6px; width: 100%; margin-top: 14px; padding: 11px;
-      background: transparent; border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; color: rgba(255,255,255,0.4);
-      font-family: inherit; font-size: 12px; font-weight: 600;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
-    }
-    .cal-refresh-btn:hover { background: rgba(255,255,255,0.04); color: #fff; }
-    .cal-sync-time {
-      text-align: center; font-size: 11px;
-      color: rgba(255,255,255,0.25); margin-top: 8px;
-    }
-  </style>
-
-  <div class="cal-section">
-    <div class="cal-eyebrow">Today</div>
-    <div class="cal-card" id="calToday">
-      <div class="cal-loading">Loading…</div>
-    </div>
-  </div>
-
-  <div class="cal-section">
-    <div class="cal-eyebrow">Upcoming</div>
-    <div class="cal-card" id="calUpcoming">
-      <div class="cal-loading">Loading…</div>
-    </div>
-  </div>
-
-  <button class="cal-refresh-btn" id="calRefreshBtn">↻ Refresh calendar</button>
-  <div class="cal-sync-time" id="calSyncTime"></div>
-
-  </div><!-- /tab-calendar -->
 
 </div>
 <script>
@@ -3943,8 +3884,9 @@ window.addEventListener('sync:dashboard', () => {
     const upcomingEl = document.getElementById('calUpcoming');
     if (upcomingEl) {
       if (!upcomingEvents.length) {
-        upcomingEl.innerHTML = '<div class="cal-empty">Nothing in the next 7 days.</div>';
+        upcomingEl.style.display = 'none';
       } else {
+        upcomingEl.style.display = 'block';
         const byDay = {};
         upcomingEvents.forEach(e => {
           const k = dateKey(e.start);
@@ -3997,14 +3939,8 @@ window.addEventListener('sync:dashboard', () => {
 
   document.getElementById('calRefreshBtn')?.addEventListener('click', loadCalendar);
 
-  // Load when tab is first opened
-  document.querySelector('[data-tab="calendar"]')?.addEventListener('click', () => {
-    const synced = document.getElementById('calSyncTime')?.textContent;
-    if (!synced) loadCalendar();
-  });
-
-  // Auto-load if calendar tab is already active on page load
-  if (document.getElementById('tab-calendar')?.classList.contains('active')) loadCalendar();
+  // Auto-load on page load
+  loadCalendar();
 })();
 
 // ── Supabase Sync ──
