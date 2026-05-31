@@ -810,6 +810,19 @@
     .cal-refresh-btn:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
     .cal-sync-time { font-size: 11px; color: rgba(255,255,255,0.25); }
 
+    /* ── Dashboard two-column layout ── */
+    .dash-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+    .dash-col { min-width: 0; }
+    @media (max-width: 640px) {
+      .dash-two-col { grid-template-columns: 1fr; }
+    }
+
     /* ── Portrait phone fixes ── */
     @media (max-width: 520px) {
       .goal-input-wrap { flex-wrap: wrap; }
@@ -880,33 +893,6 @@
 
   <div class="dash-tab-panel active" id="tab-dashboard">
 
-  <!-- Calendar -->
-  <div class="cal-section">
-    <div class="cal-card" id="calToday" style="margin-bottom:8px">
-      <div class="cal-loading">Loading calendar…</div>
-    </div>
-    <div class="cal-card" id="calUpcoming" style="display:none"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="cal-sync-time" id="calSyncTime" style="text-align:left"></div>
-      <button class="cal-refresh-btn" id="calRefreshBtn" style="width:auto;margin-top:0;padding:7px 14px;font-size:11px">↻ Refresh</button>
-    </div>
-  </div>
-
-  <!-- Goal Ticker -->
-  <div class="ticker-row">
-    <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
-      <div class="goal-ticker-led"><span class="goal-ticker-led-dot"></span></div>
-      <div class="goal-ticker-label">GOALS</div>
-      <div class="goal-ticker-stage" id="goalTickerStage">
-        <div class="goal-ticker-row">
-          <span class="goal-ticker-status" data-status="">—</span>
-          <span class="goal-ticker-text">Loading…</span>
-        </div>
-      </div>
-      <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
-    </div>
-  </div>
-
   <!-- Day Ring -->
   <div class="day-ring-card">
     <div class="ring-container">
@@ -932,6 +918,39 @@
       <div class="ring-status" id="ringStatus">😴 Still sleeping</div>
       <div class="ring-remaining" id="ringRemaining"></div>
       <div class="ring-range">8:00 AM – 12:00 AM</div>
+    </div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="cal-section">
+    <div class="dash-two-col" style="margin-bottom:0">
+      <div class="cal-card" id="calToday">
+        <div class="cal-day-header" style="margin-top:0">Today</div>
+        <div class="cal-loading">Loading calendar…</div>
+      </div>
+      <div class="cal-card" id="calUpcoming">
+        <div class="cal-day-header" style="margin-top:0">Upcoming</div>
+        <div class="cal-empty">Loading…</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;margin-top:8px">
+      <div class="cal-sync-time" id="calSyncTime" style="text-align:left"></div>
+      <button class="cal-refresh-btn" id="calRefreshBtn" style="width:auto;margin-top:0;padding:7px 14px;font-size:11px">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Goal Ticker -->
+  <div class="ticker-row">
+    <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
+      <div class="goal-ticker-led"><span class="goal-ticker-led-dot"></span></div>
+      <div class="goal-ticker-label">GOALS</div>
+      <div class="goal-ticker-stage" id="goalTickerStage">
+        <div class="goal-ticker-row">
+          <span class="goal-ticker-status" data-status="">—</span>
+          <span class="goal-ticker-text">Loading…</span>
+        </div>
+      </div>
+      <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
     </div>
   </div>
 
@@ -3858,12 +3877,13 @@ window.addEventListener('sync:dashboard', () => {
     });
 
     // Render today
+    const header = h => `<div class="cal-day-header" style="margin-top:0">${h}</div>`;
     const todayEl = document.getElementById('calToday');
     if (todayEl) {
       if (!todayEvents.length) {
-        todayEl.innerHTML = '<div class="cal-empty">Nothing scheduled today.</div>';
+        todayEl.innerHTML = header('Today') + '<div class="cal-empty">Nothing scheduled today.</div>';
       } else {
-        todayEl.innerHTML = todayEvents.map(e => {
+        todayEl.innerHTML = header('Today') + todayEvents.map(e => {
           const isPast = !e.allDay && e.end && e.end < now;
           const isNow  = !e.allDay && e.start <= now && (!e.end || e.end >= now);
           const timeStr = e.allDay ? 'All day' : fmt12(e.start) + (e.end ? ' – ' + fmt12(e.end) : '');
@@ -3883,9 +3903,8 @@ window.addEventListener('sync:dashboard', () => {
     const upcomingEl = document.getElementById('calUpcoming');
     if (upcomingEl) {
       if (!upcomingEvents.length) {
-        upcomingEl.style.display = 'none';
+        upcomingEl.innerHTML = header('Upcoming') + '<div class="cal-empty">No upcoming events.</div>';
       } else {
-        upcomingEl.style.display = 'block';
         const byDay = {};
         upcomingEvents.forEach(e => {
           const k = dateKey(e.start);
@@ -3894,7 +3913,7 @@ window.addEventListener('sync:dashboard', () => {
         });
         const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        upcomingEl.innerHTML = Object.entries(byDay).sort().map(([k, evts]) => {
+        upcomingEl.innerHTML = header('Upcoming') + Object.entries(byDay).sort().map(([k, evts]) => {
           const d = new Date(k + 'T12:00:00');
           const label = `${days[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()}`;
           const rows  = evts.map(e => {
@@ -3926,8 +3945,8 @@ window.addEventListener('sync:dashboard', () => {
   async function loadCalendar() {
     const todayEl    = document.getElementById('calToday');
     const upcomingEl = document.getElementById('calUpcoming');
-    if (todayEl)    todayEl.innerHTML    = '<div class="cal-loading">Loading…</div>';
-    if (upcomingEl) upcomingEl.style.display = 'none';
+    if (todayEl)    todayEl.innerHTML    = '<div class="cal-day-header" style="margin-top:0">Today</div><div class="cal-loading">Loading…</div>';
+    if (upcomingEl) upcomingEl.innerHTML = '<div class="cal-day-header" style="margin-top:0">Upcoming</div><div class="cal-loading">Loading…</div>';
 
     let text = null;
     for (const proxy of PROXIES) {
