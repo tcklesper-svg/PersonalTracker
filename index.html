@@ -867,16 +867,18 @@
     .assign-title { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
     .assign-row.urgency-overdue .assign-title { color: var(--danger); }
     .assign-row.urgency-today   .assign-title { color: var(--warning); }
-    .assign-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; flex-wrap: wrap; }
+    .assign-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; overflow: hidden; }
     .assign-course {
       font-family: var(--font-mono); font-size: 10px; font-weight: 600;
       padding: 2px 7px; border-radius: 99px;
       background: rgba(129,140,248,0.15); color: #a5b4fc;
       letter-spacing: 0.04em; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; max-width: 160px; flex-shrink: 1;
     }
     .assign-due {
       font-family: var(--font-mono); font-size: 10px;
       color: var(--text-tertiary); font-variant-numeric: tabular-nums;
+      white-space: nowrap; flex-shrink: 0;
     }
     .assign-row.urgency-overdue .assign-due { color: var(--danger); font-weight: 700; }
     .assign-row.urgency-today   .assign-due { color: var(--warning); font-weight: 700; }
@@ -4200,15 +4202,15 @@ window.addEventListener('sync:dashboard', () => {
     const countEl = document.getElementById('canvasWeekCount');
     if (!listEl) return;
 
-    const now   = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const week  = new Date(today); week.setDate(week.getDate() + 7);
+    const todayStr = todayKey();
+    const weekEnd  = new Date(); weekEnd.setDate(weekEnd.getDate() + 7);
+    const weekStr  = dateKey(weekEnd);
 
     // Get done state from localStorage
     const doneSet = new Set(JSON.parse(localStorage.getItem('canvas_ical_done') || '[]'));
 
     const weekItems = assignments
-      .filter(a => a.due >= today && a.due <= week)
+      .filter(a => { const k = dateKey(a.due); return k >= todayStr && k <= weekStr; })
       .sort((a, b) => a.due - b.due);
 
     if (countEl) countEl.textContent = weekItems.length ? `${weekItems.length} due` : '';
@@ -4230,7 +4232,6 @@ window.addEventListener('sync:dashboard', () => {
           <div class="assign-title">${a.title}</div>
           <div class="assign-meta">
             ${a.course ? `<span class="assign-course">${a.course}</span>` : ''}
-            <span class="assign-type">${a.type}</span>
             <span class="assign-due">${dueStr}</span>
           </div>
         </div>
