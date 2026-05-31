@@ -3851,7 +3851,7 @@ window.addEventListener('sync:dashboard', () => {
   'use strict';
 
   const ICAL_URL = 'https://calendar.google.com/calendar/ical/tcklesper%40gmail.com/public/basic.ics';
-  const PROXY    = 'https://api.allorigins.win/get?url=';
+  const PROXY    = 'https://corsproxy.io/?';
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -3984,8 +3984,8 @@ window.addEventListener('sync:dashboard', () => {
 
     try {
       const res  = await fetch(PROXY + encodeURIComponent(ICAL_URL));
-      const json = await res.json();
-      const events = parseIcal(json.contents);
+      const text = await res.text();
+      const events = parseIcal(text);
       events.sort((a, b) => a.start - b.start);
       renderEvents(events);
     } catch (e) {
