@@ -3038,6 +3038,9 @@ window.addEventListener('sync:dashboard', () => {
   const gyms  = CONFIG.gyms  || [];
   const days  = CONFIG.days  || [];
 
+  const getDoneSessions = () => { try { return JSON.parse(localStorage.getItem('po:doneSessions') || '[]'); } catch { return []; } };
+  const saveDoneSessions = d => localStorage.setItem('po:doneSessions', JSON.stringify(d));
+
   let selectedGym  = gyms[0]?.id || 'comm';
   let selectedDay  = days[0]?.id  || 'push';
   let selectedExId = '';
@@ -3349,6 +3352,15 @@ window.addEventListener('sync:dashboard', () => {
       return;
     }
     if (empty) empty.classList.add('hidden');
+    // If session is marked done, show compact summary instead of full list
+    if (getDoneSessions().includes(todayStr())) {
+      const vol      = todayLogs.reduce((s, l) => s + (l.weight||0)*l.reps, 0);
+      const exCount  = new Set(todayLogs.map(l => l.exId)).size;
+      list.innerHTML = `<li style="list-style:none;padding:14px;text-align:center;color:var(--good);font-size:13px;font-weight:600">
+        ✓ Session logged · ${todayLogs.length} sets · ${exCount} exercise${exCount===1?'':'s'}${vol>0?' · '+vol.toLocaleString()+units:''}
+      </li>`;
+      return;
+    }
     const grouped = {};
     todayLogs.forEach(l => {
       if (!grouped[l.exId]) grouped[l.exId] = { name: l.exName, sets: [] };
@@ -3743,9 +3755,30 @@ window.addEventListener('sync:dashboard', () => {
   // ── Today's workout done btn ──
   document.getElementById('twDoneBtn')?.addEventListener('click', function() {
     this.classList.toggle('is-done');
-    this.textContent = this.classList.contains('is-done') ? '✓ Done!' : 'Mark done';
-    if (this.classList.contains('is-done')) showEvaluation();
-    else { document.getElementById('poEval')?.classList.remove('show'); }
+    const isDone = this.classList.contains('is-done');
+    this.textContent = isDone ? '✓ Done!' : 'Mark done';
+
+    const today = todayStr();
+    const done  = getDoneSessions();
+    if (isDone) {
+      if (!done.includes(today)) { done.push(today); saveDoneSessions(done); }
+      showEvaluation();
+    } else {
+      const idx = done.indexOf(today);
+      if (idx > -1) { done.splice(idx, 1); saveDoneSessions(done); }
+      document.getElementById('poEval')?.classList.remove('show');
+    }
+
+    renderTodayWorkout();
+
+    // Auto-expand past workouts and include today's session
+    const pastBody   = document.getElementById('twPastBody');
+    const pastToggle = document.getElementById('twPastToggle');
+    if (isDone && pastBody) {
+      pastBody.classList.remove('hidden');
+      if (pastToggle) pastToggle.setAttribute('aria-expanded', 'true');
+    }
+    renderPastWorkouts();
   });
 
   // ── Day pill tap → snap to today's day ──
@@ -3818,8 +3851,9 @@ window.addEventListener('sync:dashboard', () => {
     const body    = document.getElementById('twPastBody');
     const countEl = document.getElementById('twPastCount');
     if (!body) return;
-    const today   = todayStr();
-    const allLogs = getLogs().filter(l => l.date !== today);
+    const today      = todayStr();
+    const sessionDone = getDoneSessions().includes(today);
+    const allLogs    = getLogs().filter(l => l.date !== today || sessionDone);
     const byDate  = {};
     allLogs.forEach(l => {
       if (!byDate[l.date]) byDate[l.date] = [];
@@ -3869,6 +3903,11 @@ window.addEventListener('sync:dashboard', () => {
   renderTodayWorkout();
   renderPastWorkouts();
   renderWeightDisplay();
+  // Restore done-button state if today's session was already marked done
+  if (getDoneSessions().includes(todayStr())) {
+    const btn = document.getElementById('twDoneBtn');
+    if (btn) { btn.classList.add('is-done'); btn.textContent = '✓ Done!'; }
+  }
   window.addEventListener('sync:training', () => {
     renderTodayWorkout();
     renderWeightDisplay();
