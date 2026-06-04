@@ -1176,7 +1176,7 @@
             <option value="routine">Routine</option>
             <option value="other">Other</option>
           </select>
-          <button id="habitAddBtn" class="stack-add-btn">+ Add</button>
+          <button id="habitAddBtn" type="button" class="stack-add-btn">+ Add</button>
         </div>
       </div>
     </div>
@@ -4567,21 +4567,27 @@ window.addEventListener('sync:dashboard', () => {
     });
   }
 
-  document.getElementById('habitAddBtn')?.addEventListener('click', () => {
-    const inp = document.getElementById('habitAddInput');
-    const cat = document.getElementById('habitAddCat');
-    const name = inp?.value.trim();
+  function doAddHabit() {
+    const inp  = document.getElementById('habitAddInput');
+    const cat  = document.getElementById('habitAddCat');
+    const name = (inp?.value || '').trim();
     if (!name) return;
     const habits = getHabits();
     if (habits.find(h => h.name.toLowerCase() === name.toLowerCase())) return;
     habits.push({ id: 'h_' + Date.now(), name, cat: cat?.value || 'other' });
     saveHabits(habits);
-    inp.value = '';
+    if (inp) inp.value = '';
     renderHabits();
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('#habitAddBtn')) doAddHabit();
   });
 
-  document.getElementById('habitAddInput')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('habitAddBtn')?.click(); }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.activeElement?.id === 'habitAddInput') {
+      e.preventDefault(); doAddHabit();
+    }
   });
 
   renderHabits();
