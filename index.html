@@ -903,6 +903,61 @@
       background: rgba(255,255,255,0.06); color: var(--text-tertiary);
     }
 
+    /* ── Habit Tracker ── */
+    .habit-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:18px; margin-bottom:12px; }
+    .habit-month-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .habit-month-label { font-size:15px; font-weight:700; color:var(--text-primary); }
+    .habit-nav-btn { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:8px; color:var(--text-primary); font-size:16px; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+    .habit-nav-btn:hover { background:rgba(255,255,255,0.12); }
+
+    .habit-grid-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); }
+    .habit-grid { border-collapse:collapse; min-width:100%; }
+    .habit-grid th, .habit-grid td { padding:0; }
+    .habit-col-header { font-family:var(--font-mono); font-size:9px; font-weight:700; color:var(--text-tertiary); text-align:center; width:28px; min-width:28px; padding:6px 0; border-right:1px solid rgba(255,255,255,0.04); }
+    .habit-col-header.is-today { color:var(--success); }
+    .habit-row-label { font-size:12px; font-weight:600; color:var(--text-secondary); padding:6px 10px; white-space:nowrap; min-width:90px; max-width:130px; overflow:hidden; text-overflow:ellipsis; border-right:1px solid rgba(255,255,255,0.06); position:sticky; left:0; background:#0d0d0f; z-index:2; }
+    .habit-cell { width:28px; min-width:28px; text-align:center; padding:4px 0; border-right:1px solid rgba(255,255,255,0.04); }
+    .habit-grid tr { border-bottom:1px solid rgba(255,255,255,0.04); }
+    .habit-grid tr:last-child { border-bottom:none; }
+    .habit-check { width:18px; height:18px; border-radius:5px; border:1.5px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); appearance:none; -webkit-appearance:none; cursor:pointer; position:relative; transition:background 0.18s,border-color 0.18s; display:inline-block; vertical-align:middle; }
+    .habit-check:checked { background:var(--success); border-color:var(--success); box-shadow:0 0 6px rgba(107,227,164,0.4); }
+    .habit-check:checked::after { content:''; position:absolute; top:2px; left:5px; width:4px; height:7px; border:2px solid #0A0A0B; border-top:none; border-left:none; transform:rotate(45deg); }
+    .habit-check:disabled { opacity:0.3; cursor:default; }
+    .habit-del-btn { background:none; border:none; color:var(--text-tertiary); cursor:pointer; font-size:13px; padding:4px 6px; opacity:0; transition:opacity 0.15s; }
+    .habit-row-label-wrap { display:flex; align-items:center; gap:2px; }
+    .habit-grid tr:hover .habit-del-btn { opacity:0.6; }
+    .habit-del-btn:hover { color:var(--danger); opacity:1 !important; }
+    .habit-future { opacity:0.18; pointer-events:none; }
+
+    .habit-add-row { display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); }
+    .habit-add-input { flex:1; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:var(--text-primary); font-family:inherit; font-size:13px; outline:none; transition:border-color 0.18s; }
+    .habit-add-input:focus { border-color:rgba(255,255,255,0.22); }
+    .habit-add-input::placeholder { color:var(--text-tertiary); }
+    .habit-add-btn { padding:10px 16px; border-radius:10px; border:none; background:linear-gradient(180deg,#fff 0%,#e8e5dd 100%); color:#0A0A0B; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:inset 0 1px 0 rgba(255,255,255,0.8),0 4px 12px rgba(0,0,0,0.3); }
+
+    .habit-chart-wrap { margin-bottom:16px; }
+    .habit-chart-label { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:8px; }
+    .habit-bar-svg { width:100%; overflow:visible; display:block; }
+
+    .habit-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+    .habit-stat-box { background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px; text-align:center; }
+    .habit-stat-num { font-size:24px; font-weight:700; letter-spacing:-0.03em; color:var(--text-primary); line-height:1; }
+    .habit-stat-lbl { font-size:10px; font-weight:700; letter-spacing:0.10em; text-transform:uppercase; color:var(--text-tertiary); margin-top:4px; }
+    .habit-pct-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .habit-pct-name { font-size:12px; font-weight:600; color:var(--text-secondary); min-width:90px; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; }
+    .habit-pct-bar-wrap { flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
+    .habit-pct-bar-fill { height:100%; background:var(--success); border-radius:3px; transition:width 0.4s; }
+    .habit-pct-val { font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--text-tertiary); min-width:28px; text-align:right; }
+
+    .mood-log-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .mood-log-label { font-size:12px; font-weight:600; color:var(--text-secondary); min-width:54px; }
+    .mood-btn-group { display:flex; gap:6px; }
+    .mood-btn { width:36px; height:36px; border-radius:8px; border:1.5px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.04); color:var(--text-secondary); font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s; font-family:inherit; }
+    .mood-btn:hover { background:rgba(255,255,255,0.10); color:var(--text-primary); }
+    .mood-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 10px var(--accent-glow); }
+    .mood-save-btn { padding:9px 16px; border-radius:10px; border:none; background:linear-gradient(180deg,#fff 0%,#e8e5dd 100%); color:#0A0A0B; font-size:12px; font-weight:700; cursor:pointer; margin-top:4px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.8),0 4px 12px rgba(0,0,0,0.3); }
+    .mood-graph-svg { width:100%; display:block; margin-top:12px; overflow:visible; }
+
     /* ── Portrait phone fixes ── */
     @media (max-width: 520px) {
       .goal-input-wrap { flex-wrap: wrap; }
@@ -1140,6 +1195,74 @@
           <button id="stackAddBtn" class="stack-add-btn">+ Add</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Habit Tracker ── -->
+  <div class="section" id="habitSection">
+    <div class="section-title">Habit Tracker</div>
+
+    <div class="habit-card">
+      <!-- Month nav -->
+      <div class="habit-month-nav">
+        <button class="habit-nav-btn" id="habitPrevMonth">‹</button>
+        <span class="habit-month-label" id="habitMonthLabel">—</span>
+        <button class="habit-nav-btn" id="habitNextMonth">›</button>
+      </div>
+
+      <!-- Scrollable grid -->
+      <div class="habit-grid-wrap">
+        <table class="habit-grid" id="habitGrid"></table>
+      </div>
+
+      <!-- Stats -->
+      <div class="habit-stats-grid" id="habitStatsGrid"></div>
+      <div id="habitPctRows"></div>
+
+      <!-- Daily bar chart -->
+      <div class="habit-chart-wrap" id="habitDailyChartWrap">
+        <div class="habit-chart-label">Completions per day</div>
+        <svg class="habit-bar-svg" id="habitDailySvg" viewBox="0 0 300 60"></svg>
+      </div>
+
+      <!-- Weekly bar chart -->
+      <div class="habit-chart-wrap" id="habitWeeklyChartWrap">
+        <div class="habit-chart-label">Weekly totals</div>
+        <svg class="habit-bar-svg" id="habitWeeklySvg" viewBox="0 0 300 60"></svg>
+      </div>
+
+      <!-- Add habit -->
+      <div class="habit-add-row">
+        <input class="habit-add-input" id="habitAddInput" type="text" placeholder="New habit (e.g. Read 20 min)…" maxlength="40">
+        <button class="habit-add-btn" id="habitAddBtn">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Mood & Energy -->
+    <div class="habit-card">
+      <div class="gm-eyebrow" style="margin-bottom:12px">Mood &amp; Energy</div>
+      <div class="mood-log-row">
+        <span class="mood-log-label">Mood</span>
+        <div class="mood-btn-group" id="moodBtns">
+          <button class="mood-btn" data-val="1">1</button>
+          <button class="mood-btn" data-val="2">2</button>
+          <button class="mood-btn" data-val="3">3</button>
+          <button class="mood-btn" data-val="4">4</button>
+          <button class="mood-btn" data-val="5">5</button>
+        </div>
+      </div>
+      <div class="mood-log-row">
+        <span class="mood-log-label">Energy</span>
+        <div class="mood-btn-group" id="energyBtns">
+          <button class="mood-btn" data-val="1">1</button>
+          <button class="mood-btn" data-val="2">2</button>
+          <button class="mood-btn" data-val="3">3</button>
+          <button class="mood-btn" data-val="4">4</button>
+          <button class="mood-btn" data-val="5">5</button>
+        </div>
+      </div>
+      <button class="mood-save-btn" id="moodSaveBtn">Save today</button>
+      <svg class="mood-graph-svg" id="moodGraphSvg" viewBox="0 0 300 80"></svg>
     </div>
   </div>
 
@@ -3322,31 +3445,68 @@ window.addEventListener('sync:dashboard', () => {
     logs.forEach(l => {
       if (!byDate[l.date] || l.weight > byDate[l.date]) byDate[l.date] = l.weight;
     });
-    const sessions = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0])).slice(-12);
-    if (sessions.length < 2) { wrap.style.display = 'none'; return; }
+    const sessions = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0])).slice(-16);
+    if (!sessions.length) { wrap.style.display = 'none'; return; }
 
     wrap.style.display = 'block';
-    const W = 300, H = 80, P = 12;
+    const W = 300, H = 90, P = 14;
     const weights = sessions.map(s => s[1]);
+    const dates   = sessions.map(s => s[0]);
     const lo = Math.min(...weights), hi = Math.max(...weights);
-    const range = hi - lo || 1;
-    const pts = sessions.map(([, w], i) => ({
-      x: P + (i / (sessions.length - 1)) * (W - 2*P),
-      y: H - P - ((w - lo) / range) * (H - 2*P),
-      w
-    }));
-    const line = pts.map((p, i) => `${i?'L':'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('');
-    const fill = `${line}L${pts[pts.length-1].x.toFixed(1)},${H}L${pts[0].x.toFixed(1)},${H}Z`;
-    svg.innerHTML = `<defs><linearGradient id="pgGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.3"/>
+    const range = hi - lo || (hi * 0.1) || 1;
+    const loDisplay = lo - range * 0.15;
+
+    // If only one session, show a single dot centered
+    const pts = sessions.length === 1
+      ? [{ x: W / 2, y: H / 2, w: weights[0], date: dates[0] }]
+      : sessions.map(([date, w], i) => ({
+          x: P + (i / (sessions.length - 1)) * (W - 2*P),
+          y: H - P - ((w - loDisplay) / (range * 1.3)) * (H - 2*P),
+          w, date
+        }));
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const fmtDate = s => { const d = new Date(s + 'T12:00'); return `${months[d.getMonth()]} ${d.getDate()}`; };
+
+    let svgContent = `<defs><linearGradient id="pgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.25"/>
       <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
-    </linearGradient></defs>
-    <path d="${fill}" fill="url(#pgGrad)"/>
-    <path d="${line}" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    ${pts.map((p, i) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${i===pts.length-1?4:2.5}" fill="${i===pts.length-1?'#fff':'#818cf8'}"/>`).join('')}`;
+    </linearGradient></defs>`;
+
+    if (pts.length > 1) {
+      const line = pts.map((p, i) => `${i?'L':'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('');
+      const fill = `${line}L${pts[pts.length-1].x.toFixed(1)},${H}L${pts[0].x.toFixed(1)},${H}Z`;
+      svgContent += `<path d="${fill}" fill="url(#pgGrad)"/>
+        <path d="${line}" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+
+    // Y-axis labels (lo and hi)
+    const yHi = H - P - ((hi - loDisplay) / (range * 1.3)) * (H - 2*P);
+    const yLo = H - P - ((lo - loDisplay) / (range * 1.3)) * (H - 2*P);
+    svgContent += `<text x="2" y="${(yHi+4).toFixed(1)}" font-size="8" fill="rgba(255,255,255,0.3)" font-family="monospace">${hi}</text>`;
+    if (lo !== hi) svgContent += `<text x="2" y="${(yLo+4).toFixed(1)}" font-size="8" fill="rgba(255,255,255,0.3)" font-family="monospace">${lo}</text>`;
+
+    // Dots with date labels on first/last
+    svgContent += pts.map((p, i) => {
+      const isLast = i === pts.length - 1;
+      const isFirst = i === 0;
+      const r = isLast ? 4.5 : 2.5;
+      const fill2 = isLast ? '#fff' : '#818cf8';
+      let label2 = '';
+      if (isFirst || isLast) {
+        const anchor = isFirst ? 'start' : 'end';
+        const lx = isFirst ? Math.max(p.x, 18) : Math.min(p.x, W - 18);
+        label2 = `<text x="${lx.toFixed(1)}" y="${(H - 2).toFixed(1)}" font-size="7.5" fill="rgba(255,255,255,0.4)" text-anchor="${anchor}" font-family="monospace">${fmtDate(p.date)}</text>`;
+      }
+      return `${label2}<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${fill2}" stroke="${isLast?'#818cf8':'none'}" stroke-width="1.5"/>`;
+    }).join('');
+
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = svgContent;
 
     const delta = weights[weights.length-1] - weights[0];
-    if (label) label.textContent = `Progress · ${sessions.length} sessions${delta>0?` · +${delta}${units}`:delta<0?` · ${delta}${units}`:''}`;
+    const deltaStr = delta > 0 ? ` · +${delta}${units}` : delta < 0 ? ` · ${delta}${units}` : '';
+    if (label) label.textContent = `Progress · ${sessions.length} session${sessions.length===1?'':'s'}${deltaStr}`;
   }
 
   // ── Session evaluation ──
@@ -3468,6 +3628,9 @@ window.addEventListener('sync:dashboard', () => {
     selectedReps = null;
     updateLogForm();
     renderTodayWorkout();
+    renderRxCard(ex);
+    renderStats(ex);
+    renderExerciseGraph(ex);
     startRestTimer();
     const lb = document.getElementById('logBtn');
     if (lb) { const orig = lb.textContent; lb.textContent = '✓ Logged!'; setTimeout(() => lb.textContent = orig, 1400); }
@@ -3648,11 +3811,61 @@ window.addEventListener('sync:dashboard', () => {
     if (wtInput && t) wtInput.value = t.w;
   });
 
+  // ── Past workouts ──
+  function renderPastWorkouts() {
+    const body    = document.getElementById('twPastBody');
+    const countEl = document.getElementById('twPastCount');
+    if (!body) return;
+    const today   = todayStr();
+    const allLogs = getLogs().filter(l => l.date !== today);
+    const byDate  = {};
+    allLogs.forEach(l => {
+      if (!byDate[l.date]) byDate[l.date] = [];
+      byDate[l.date].push(l);
+    });
+    const days = Object.entries(byDate).sort(([a], [b]) => b.localeCompare(a)).slice(0, 30);
+    if (countEl) countEl.textContent = days.length;
+    if (!days.length) {
+      body.innerHTML = '<div class="po-tw-past-empty">No past workouts yet.</div>';
+      return;
+    }
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dow    = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    body.innerHTML = days.map(([date, sets]) => {
+      const d    = new Date(date + 'T12:00');
+      const label= `${dow[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()}`;
+      const vol  = sets.reduce((s, l) => s + (l.weight||0)*l.reps, 0);
+      const exNames = [...new Set(sets.map(l => l.exName))];
+      return `<div class="po-tw-past-day">
+        <div class="po-tw-past-day-h">
+          <span class="po-tw-past-day-date">${label}</span>
+          <span class="po-tw-past-day-summary">${sets.length} sets${vol>0?` · ${vol.toLocaleString()}${units}`:''}</span>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--text-3);line-height:1.6">${
+          exNames.map(name => {
+            const exSets = sets.filter(s => s.exName === name);
+            const summary = exSets.map(s => s.bw ? s.reps+'r' : s.weight+units+'×'+s.reps).join(', ');
+            return `<span style="margin-right:10px"><span style="color:var(--text-2);font-weight:600">${name}</span>: ${summary}</span>`;
+          }).join('')
+        }</div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('twPastToggle')?.addEventListener('click', function () {
+    const body = document.getElementById('twPastBody');
+    if (!body) return;
+    const open = body.classList.toggle('hidden');
+    this.setAttribute('aria-expanded', String(!open));
+    if (!open) renderPastWorkouts();
+  });
+
   // ── Init ──
   renderDayPill();
   renderSegControls();
   renderExerciseSelect();
   renderTodayWorkout();
+  renderPastWorkouts();
   renderWeightDisplay();
   window.addEventListener('sync:training', () => {
     renderTodayWorkout();
@@ -4351,6 +4564,293 @@ window.addEventListener('sync:dashboard', () => {
   document.getElementById('calRefreshBtn')?.addEventListener('click', loadCanvasAssignments);
 
   loadCanvasAssignments();
+})();
+
+// ── Habit Tracker ──
+(function () {
+  'use strict';
+  const get = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+  const set = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function todayKey() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DAYS_SHORT   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+  let viewYear  = new Date().getFullYear();
+  let viewMonth = new Date().getMonth(); // 0-based
+
+  const getHabits      = () => get('habit:list') || [];
+  const saveHabits     = h => set('habit:list', h);
+  const getDone        = () => get('habit:done') || {};
+  const saveDone       = d => set('habit:done', d);
+  const getMood        = () => get('habit:mood') || {};
+  const saveMood       = m => set('habit:mood', m);
+
+  function doneKey(habitId, dateStr) { return habitId + '|' + dateStr; }
+
+  function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+
+  function dateStr(y, m, d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
+
+  // ── Grid ──
+  function renderGrid() {
+    const table  = document.getElementById('habitGrid');
+    const label  = document.getElementById('habitMonthLabel');
+    if (!table) return;
+    label.textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+
+    const habits  = getHabits();
+    const done    = getDone();
+    const today   = todayKey();
+    const days    = daysInMonth(viewYear, viewMonth);
+    const todayD  = new Date();
+    const isCurrentMonth = todayD.getFullYear() === viewYear && todayD.getMonth() === viewMonth;
+    const todayDay = isCurrentMonth ? todayD.getDate() : null;
+
+    // Header row
+    let html = '<thead><tr><th class="habit-row-label" style="background:#0d0d0f;position:sticky;left:0;z-index:3">Habit</th>';
+    for (let d = 1; d <= days; d++) {
+      const cls = (d === todayDay) ? 'habit-col-header is-today' : 'habit-col-header';
+      html += `<th class="${cls}">${d}</th>`;
+    }
+    html += '</tr></thead><tbody>';
+
+    if (!habits.length) {
+      html += `<tr><td colspan="${days+1}" style="text-align:center;padding:18px;font-size:12px;color:rgba(255,255,255,0.3);font-style:italic">Add your first habit below</td></tr>`;
+    }
+
+    habits.forEach(h => {
+      html += `<tr><td class="habit-row-label"><div class="habit-row-label-wrap"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${h.name}</span><button class="habit-del-btn" data-id="${h.id}" title="Remove">×</button></div></td>`;
+      for (let d = 1; d <= days; d++) {
+        const ds      = dateStr(viewYear, viewMonth, d);
+        const isFuture = ds > today;
+        const checked  = !!done[doneKey(h.id, ds)];
+        html += `<td class="habit-cell${isFuture?' habit-future':''}"><input type="checkbox" class="habit-check" data-hid="${h.id}" data-date="${ds}" ${checked?'checked':''} ${isFuture?'disabled':''}></td>`;
+      }
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    table.innerHTML = html;
+
+    // Checkbox listeners
+    table.querySelectorAll('.habit-check').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const done2 = getDone();
+        const k = doneKey(cb.dataset.hid, cb.dataset.date);
+        if (cb.checked) done2[k] = true; else delete done2[k];
+        saveDone(done2);
+        renderCharts();
+        renderStats();
+      });
+    });
+
+    // Delete habit
+    table.querySelectorAll('.habit-del-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id   = btn.dataset.id;
+        const done2 = getDone();
+        // Remove all completions for this habit
+        Object.keys(done2).filter(k => k.startsWith(id + '|')).forEach(k => delete done2[k]);
+        saveDone(done2);
+        saveHabits(getHabits().filter(h => h.id !== id));
+        renderAll();
+      });
+    });
+  }
+
+  // ── Charts ──
+  function renderCharts() {
+    const habits = getHabits();
+    const done   = getDone();
+    const days   = daysInMonth(viewYear, viewMonth);
+    const today  = todayKey();
+
+    // Daily completions array
+    const daily = [];
+    for (let d = 1; d <= days; d++) {
+      const ds = dateStr(viewYear, viewMonth, d);
+      if (ds > today) { daily.push(null); continue; }
+      const count = habits.filter(h => done[doneKey(h.id, ds)]).length;
+      daily.push(count);
+    }
+    const maxH = habits.length || 1;
+
+    // Daily bar chart
+    renderBarChart('habitDailySvg', daily.map((v, i) => ({
+      value: v, label: String(i + 1), isPast: v !== null
+    })), maxH, false);
+
+    // Weekly totals (sum up daily by week)
+    const weeks = [];
+    for (let w = 0; w < Math.ceil(days / 7); w++) {
+      let total = 0, pastDays = 0;
+      for (let d = w*7+1; d <= Math.min((w+1)*7, days); d++) {
+        const ds = dateStr(viewYear, viewMonth, d);
+        if (ds <= today) { total += habits.filter(h => done[doneKey(h.id, ds)]).length; pastDays++; }
+      }
+      weeks.push({ value: pastDays > 0 ? total : null, label: `W${w+1}`, isPast: pastDays > 0 });
+    }
+    renderBarChart('habitWeeklySvg', weeks, maxH * 7, true);
+  }
+
+  function renderBarChart(svgId, bars, maxVal, isWeekly) {
+    const svg = document.getElementById(svgId);
+    if (!svg) return;
+    const W = 300, H = 55, pad = 4;
+    const n = bars.length;
+    const barW = Math.max(4, (W - pad * 2) / n - 2);
+    const gap  = (W - pad * 2 - barW * n) / Math.max(n - 1, 1);
+    let content = '';
+    bars.forEach((b, i) => {
+      if (b.value === null) return;
+      const x = pad + i * (barW + gap);
+      const pct = maxVal > 0 ? Math.min(b.value / maxVal, 1) : 0;
+      const bh  = Math.max(pct * (H - 14), pct > 0 ? 3 : 0);
+      const y   = H - 10 - bh;
+      const col = pct >= 1 ? 'var(--success)' : pct >= 0.6 ? '#818cf8' : 'rgba(255,255,255,0.25)';
+      content += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(bh,0).toFixed(1)}" rx="2" fill="${col}" opacity="${b.isPast?1:0.3}"/>`;
+      if (b.value > 0)
+        content += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-2).toFixed(1)}" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle" font-family="monospace">${b.value}</text>`;
+      if (n <= 31)
+        content += `<text x="${(x+barW/2).toFixed(1)}" y="${H-1}" font-size="7" fill="rgba(255,255,255,0.3)" text-anchor="middle" font-family="monospace">${b.label}</text>`;
+    });
+    svg.innerHTML = content;
+  }
+
+  // ── Stats ──
+  function renderStats() {
+    const habits  = getHabits();
+    const done    = getDone();
+    const days    = daysInMonth(viewYear, viewMonth);
+    const today   = todayKey();
+    const pastDays = Array.from({length: days}, (_, i) => dateStr(viewYear, viewMonth, i+1)).filter(d => d <= today).length;
+    const goal    = habits.length * pastDays;
+    let completed = 0;
+    habits.forEach(h => {
+      for (let d = 1; d <= days; d++) {
+        const ds = dateStr(viewYear, viewMonth, d);
+        if (ds <= today && done[doneKey(h.id, ds)]) completed++;
+      }
+    });
+    const remaining = Math.max(0, goal - completed);
+
+    const grid = document.getElementById('habitStatsGrid');
+    if (grid) grid.innerHTML = `
+      <div class="habit-stat-box"><div class="habit-stat-num">${goal}</div><div class="habit-stat-lbl">Goal</div></div>
+      <div class="habit-stat-box"><div class="habit-stat-num" style="color:var(--success)">${completed}</div><div class="habit-stat-lbl">Done</div></div>
+      <div class="habit-stat-box"><div class="habit-stat-num" style="color:var(--warning)">${remaining}</div><div class="habit-stat-lbl">Left</div></div>`;
+
+    const pctEl = document.getElementById('habitPctRows');
+    if (pctEl && habits.length) {
+      pctEl.innerHTML = habits.map(h => {
+        const done2 = Array.from({length: days}, (_, i) => dateStr(viewYear, viewMonth, i+1))
+          .filter(d => d <= today && done[doneKey(h.id, d)]).length;
+        const pct = pastDays > 0 ? Math.round(done2 / pastDays * 100) : 0;
+        return `<div class="habit-pct-row">
+          <span class="habit-pct-name">${h.name}</span>
+          <div class="habit-pct-bar-wrap"><div class="habit-pct-bar-fill" style="width:${pct}%"></div></div>
+          <span class="habit-pct-val">${pct}%</span>
+        </div>`;
+      }).join('');
+    } else if (pctEl) {
+      pctEl.innerHTML = '';
+    }
+  }
+
+  // ── Mood ──
+  let selMood = null, selEnergy = null;
+
+  function initMoodButtons() {
+    const today   = todayKey();
+    const moods   = getMood();
+    const todayEntry = moods[today] || {};
+    selMood   = todayEntry.mood   || null;
+    selEnergy = todayEntry.energy || null;
+
+    ['moodBtns', 'energyBtns'].forEach((groupId, gi) => {
+      const group = document.getElementById(groupId);
+      if (!group) return;
+      const cur = gi === 0 ? selMood : selEnergy;
+      group.querySelectorAll('.mood-btn').forEach(btn => {
+        btn.classList.toggle('active', +btn.dataset.val === cur);
+        btn.addEventListener('click', () => {
+          group.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (gi === 0) selMood   = +btn.dataset.val;
+          else          selEnergy = +btn.dataset.val;
+        });
+      });
+    });
+  }
+
+  function renderMoodGraph() {
+    const svg   = document.getElementById('moodGraphSvg');
+    if (!svg) return;
+    const moods = getMood();
+    const entries = Object.entries(moods).sort(([a],[b]) => a.localeCompare(b)).slice(-30);
+    if (entries.length < 2) { svg.innerHTML = '<text x="50%" y="40" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.25)" font-family="monospace">Log a few days to see your graph</text>'; return; }
+
+    const W = 300, H = 75, P = 14;
+    const n = entries.length;
+    const xOf = i => P + (i / (n-1)) * (W - 2*P);
+    const yOf = v => H - P - ((v - 1) / 4) * (H - 2*P);
+
+    const moodPts    = entries.map(([, v], i) => ({ x: xOf(i), y: yOf(v.mood   || 3) }));
+    const energyPts  = entries.map(([, v], i) => ({ x: xOf(i), y: yOf(v.energy || 3) }));
+
+    const line = pts => pts.map((p, i) => `${i?'L':'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('');
+    svg.innerHTML = `
+      <path d="${line(moodPts)}"   fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${line(energyPts)}" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      ${moodPts.map(p   => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="#818cf8"/>`).join('')}
+      ${energyPts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="var(--success)"/>`).join('')}
+      <text x="${P}" y="${H}" font-size="8" fill="#818cf8" font-family="monospace">mood</text>
+      <text x="${P+38}" y="${H}" font-size="8" fill="var(--success)" font-family="monospace">energy</text>`;
+  }
+
+  // ── Add habit ──
+  function addHabit(name) {
+    const habits = getHabits();
+    if (habits.find(h => h.name.toLowerCase() === name.toLowerCase())) return;
+    habits.push({ id: 'h_' + Date.now(), name });
+    saveHabits(habits);
+    renderAll();
+  }
+
+  function renderAll() { renderGrid(); renderCharts(); renderStats(); }
+
+  // ── Event wiring ──
+  document.getElementById('habitPrevMonth')?.addEventListener('click', () => {
+    viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderAll();
+  });
+  document.getElementById('habitNextMonth')?.addEventListener('click', () => {
+    viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderAll();
+  });
+  document.getElementById('habitAddBtn')?.addEventListener('click', () => {
+    const inp = document.getElementById('habitAddInput');
+    const name = inp?.value.trim();
+    if (name) { addHabit(name); inp.value = ''; }
+  });
+  document.getElementById('habitAddInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('habitAddBtn')?.click(); }
+  });
+  document.getElementById('moodSaveBtn')?.addEventListener('click', () => {
+    if (!selMood && !selEnergy) return;
+    const moods = getMood();
+    moods[todayKey()] = { mood: selMood || 3, energy: selEnergy || 3 };
+    saveMood(moods);
+    renderMoodGraph();
+    const btn = document.getElementById('moodSaveBtn');
+    if (btn) { const t = btn.textContent; btn.textContent = '✓ Saved'; setTimeout(() => btn.textContent = t, 1200); }
+  });
+
+  // ── Init ──
+  renderAll();
+  initMoodButtons();
+  renderMoodGraph();
 })();
 
 // ── Supabase Sync ──
