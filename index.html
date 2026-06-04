@@ -3185,12 +3185,12 @@ window.addEventListener('sync:dashboard', () => {
     return past.filter(l => l.date === lastDate);
   }
 
-  // Returns true if the last 3 sessions at curWeight all had majority of sets below repMin
+  // Returns true if the 3 most recent sessions at curWeight all had majority of sets below repMin
+  // Includes today so today's failure counts toward the streak
   function isStalled(exId, allLogs, curWeight, repMin) {
-    const today = todayStr();
     const byDate = {};
     allLogs
-      .filter(l => l.date !== today && !l.bw && parseFloat(l.weight) === parseFloat(curWeight))
+      .filter(l => !l.bw && parseFloat(l.weight) === parseFloat(curWeight))
       .forEach(l => { (byDate[l.date] = byDate[l.date] || []).push(l); });
     const sessions = Object.entries(byDate)
       .sort(([a], [b]) => b.localeCompare(a))
@@ -3198,7 +3198,7 @@ window.addEventListener('sync:dashboard', () => {
     if (sessions.length < 3) return false;
     return sessions.slice(0, 3).every(sets => {
       const below = sets.filter(s => s.reps < repMin).length;
-      return below > sets.length / 2;
+      return below >= Math.ceil(sets.length / 2);
     });
   }
 
@@ -3269,9 +3269,19 @@ window.addEventListener('sync:dashboard', () => {
         reason   = `${repDrop}-rep drop (${reps[0]} → ${reps[reps.length - 1]}): more than 4 reps is a flag. A 2–3 rep drop S1→S3 is normal — if this keeps happening, rest longer or the weight is too heavy.`;
 
       } else if (anyBelowMin) {
-        // Rule 2: Some sets fell below the bottom of range → hold and build
-        headline = ex.bw ? `Keep building` : `Hold at ${curWeight} ${units}`;
-        reason   = `Sets: ${reps.join(', ')} — some fell below ${repMin} reps. Stay at this weight until all sets land in ${repMin}–${repMax}.`;
+        const belowCount = reps.filter(r => r < repMin).length;
+        const mostBelow  = reps.length >= 2 && belowCount >= Math.ceil(reps.length / 2);
+        if (mostBelow && !ex.bw) {
+          // Majority of sets below floor → drop by one step
+          const step   = parseFloat(ex.step || 2.5);
+          const dropTo = Math.round((parseFloat(curWeight) - step) * 10) / 10;
+          dir = 'down'; tagCls = 'down';
+          headline = `Drop to ${dropTo} ${units} next session`;
+          reason   = `${belowCount} of ${reps.length} sets fell below ${repMin} reps (${reps.join(', ')}). The weight is too heavy right now — back off ${step} ${units} and rebuild clean reps.`;
+        } else {
+          headline = ex.bw ? `Keep building` : `Hold at ${curWeight} ${units}`;
+          reason   = `Sets: ${reps.join(', ')} — some fell below ${repMin} reps. Stay at this weight until all sets land in ${repMin}–${repMax}.`;
+        }
 
       } else {
         // Rule 2: Within range but not at ceiling → hold, push for more reps
@@ -3386,10 +3396,12 @@ window.addEventListener('sync:dashboard', () => {
       .slice(-20)
       .map(([date, sets]) => {
         const topWeight = Math.max(...sets.map(s => s.weight));
+        const topReps   = Math.max(...sets.map(s => s.reps));
+        const avgReps   = Math.round(sets.reduce((a, s) => a + s.reps, 0) / sets.length);
         const allAtCeil = sets.length >= 2 && sets.every(s => s.reps >= upgrade);
         const anyBelow  = sets.some(s => s.reps < repMin);
         const status    = allAtCeil ? 'ready' : anyBelow ? 'struggling' : 'building';
-        return { date, weight: topWeight, status, n: sets.length };
+        return { date, weight: topWeight, topReps, avgReps, status, n: sets.length };
       });
 
     wrap.style.display = 'block';
@@ -3451,22 +3463,31 @@ window.addEventListener('sync:dashboard', () => {
       return `<text x="${x.toFixed(1)}" y="${H - 4}" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="${anchor}" font-family="monospace">${fmtD(sessions[i].date)}</text>`;
     }).join('');
 
-    // Dots
+    // Dots + rep labels
     const dotsSVG = pts.map((p, i) => {
       const isLast = i === pts.length - 1;
       const c = col(p.status);
       const r = isLast ? 5.5 : 3.5;
-      return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}"
+      const dot = `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}"
         fill="${isLast ? c : 'rgba(10,10,11,0.85)'}" stroke="${c}" stroke-width="${isLast ? 0 : 1.8}"/>`;
+      // Show top reps below each dot (skip if dots too close)
+      const showReps = pts.length <= 12 || isLast;
+      const repLabel = showReps
+        ? `<text x="${p.x.toFixed(1)}" y="${(p.y + r + 9).toFixed(1)}"
+            font-size="8" fill="${isLast ? c : 'rgba(255,255,255,0.3)'}"
+            text-anchor="middle" font-family="monospace">${p.topReps}r</text>`
+        : '';
+      return dot + repLabel;
     }).join('');
 
-    // Weight callout on latest point
-    const last = pts[pts.length - 1];
+    // Weight + reps callout on latest point
+    const last   = pts[pts.length - 1];
     const callX  = last.x > W * 0.72 ? last.x - 9 : last.x + 9;
     const anchor = last.x > W * 0.72 ? 'end' : 'start';
-    const calloutSVG = `<text x="${callX.toFixed(1)}" y="${(last.y - 8).toFixed(1)}"
-      font-size="11" font-weight="700" fill="${col(last.status)}"
-      text-anchor="${anchor}" font-family="monospace">${last.weight}${units}</text>`;
+    const calloutSVG = `
+      <text x="${callX.toFixed(1)}" y="${(last.y - 10).toFixed(1)}"
+        font-size="11" font-weight="700" fill="${col(last.status)}"
+        text-anchor="${anchor}" font-family="monospace">${last.weight}${units}</text>`;
 
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.innerHTML = `<defs>
