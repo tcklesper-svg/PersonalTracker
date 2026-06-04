@@ -4521,30 +4521,26 @@ window.addEventListener('sync:dashboard', () => {
     if (progText) progText.textContent = `${checked} / ${total} done today · resets at midnight`;
     if (progBar)  progBar.style.width  = total ? `${(checked / total) * 100}%` : '0%';
 
-    if (!habits.length) {
-      groupsEl.innerHTML = '<div class="stack-window-empty" style="padding:12px 0">Add your first habit below.</div>';
-      return;
-    }
-
     groupsEl.innerHTML = CATS.map(cat => {
       const catHabits = habits.filter(h => h.cat === cat.id);
-      if (!catHabits.length) return '';
-      const items = catHabits.map(h => {
-        const isDone = !!done[doneKey(h.id)];
-        return `<div class="stack-item${isDone?' taken':''}" data-id="${h.id}">
-          <button class="stack-check${isDone?' checked':''}" data-id="${h.id}" aria-label="Mark done">${isDone?'✓':''}</button>
-          <div class="stack-item-body">
-            <div class="stack-item-name">${h.name}</div>
-            <div class="stack-item-meta"><span class="habit-cat-tag habit-cat-${cat.id}">${cat.label}</span></div>
-          </div>
-          <button class="stack-item-del" data-id="${h.id}" title="Remove">×</button>
-        </div>`;
-      }).join('');
+      const doneCount = catHabits.filter(h => done[doneKey(h.id)]).length;
+      const items = catHabits.length
+        ? catHabits.map(h => {
+            const isDone = !!done[doneKey(h.id)];
+            return `<div class="stack-item${isDone?' taken':''}" data-id="${h.id}">
+              <button class="stack-check${isDone?' checked':''}" data-id="${h.id}" aria-label="Mark done">${isDone?'✓':''}</button>
+              <div class="stack-item-body">
+                <div class="stack-item-name">${h.name}</div>
+              </div>
+              <button class="stack-item-del" data-id="${h.id}" title="Remove">×</button>
+            </div>`;
+          }).join('')
+        : `<div class="stack-window-empty">No ${cat.label.toLowerCase()} habits yet — add one below.</div>`;
       return `<div class="stack-window">
         <div class="stack-window-header">
           <span class="stack-window-icon">${cat.icon}</span>
           <span class="stack-window-title">${cat.label}</span>
-          <span class="stack-window-time">${catHabits.filter(h=>done[doneKey(h.id)]).length}/${catHabits.length}</span>
+          ${catHabits.length ? `<span class="stack-window-time">${doneCount}/${catHabits.length}</span>` : ''}
         </div>
         ${items}
       </div>`;
