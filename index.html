@@ -3188,6 +3188,36 @@ window.addEventListener('sync:dashboard', () => {
     return past.filter(l => l.date === lastDate);
   }
 
+  // Returns last n sessions (most recent first) with date, weight, avgReps, topReps, sets
+  function getSessionHistory(exId, allLogs, n) {
+    const byDate = {};
+    allLogs.filter(l => !l.bw).forEach(l => {
+      (byDate[l.date] = byDate[l.date] || []).push(l);
+    });
+    return Object.entries(byDate)
+      .sort(([a], [b]) => b.localeCompare(a))
+      .slice(0, n || 8)
+      .map(([date, sets]) => ({
+        date,
+        weight:   Math.max(...sets.map(s => s.weight)),
+        avgReps:  sets.reduce((a, s) => a + s.reps, 0) / sets.length,
+        topReps:  Math.max(...sets.map(s => s.reps)),
+        sets
+      }));
+  }
+
+  // 'improving' | 'flat' | 'declining' | 'new' — based on avg reps across last sessions at this weight
+  function getRepTrend(history, curWeight) {
+    const atCur = history.filter(s => parseFloat(s.weight) === parseFloat(curWeight));
+    if (atCur.length < 2) return 'new';
+    const diffs = [];
+    for (let i = 0; i < Math.min(atCur.length - 1, 3); i++) {
+      diffs.push(atCur[i].avgReps - atCur[i + 1].avgReps);
+    }
+    const avg = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+    return avg > 0.4 ? 'improving' : avg < -0.4 ? 'declining' : 'flat';
+  }
+
   // Returns true if the 3 most recent sessions at curWeight all had majority of sets below repMin
   // Includes today so today's failure counts toward the streak
   function isStalled(exId, allLogs, curWeight, repMin) {
@@ -3229,13 +3259,26 @@ window.addEventListener('sync:dashboard', () => {
       reason   = `Target ${repMin}–${repMax} reps. Hit ${upgrade} on every set to progress.`;
 
     } else if (!todaySets.length) {
-      // No sets yet today — context from last session
+      // No sets yet today — context from last session + trend
       const prev    = lastSessionSets(ex.id, allLogs);
       const prevMax = prev.length ? Math.max(...prev.map(s => s.reps)) : null;
+      const history = getSessionHistory(ex.id, allLogs, 8);
+      const sessionsAtCur = history.filter(s => parseFloat(s.weight) === parseFloat(curWeight)).length;
+      const trend   = getRepTrend(history, curWeight);
       headline = ex.bw ? `Working set` : `Working weight: ${curWeight} ${units}`;
-      reason   = prevMax !== null
-        ? `Last session top: ${prevMax} reps. Target ${repMin}–${repMax} — hit ${upgrade} on every set to progress.`
-        : `Target ${repMin}–${repMax} reps. Hit ${upgrade} on every set to progress.`;
+      if (prevMax !== null) {
+        const nearCeil  = prevMax >= upgrade - 1 && prevMax < upgrade;
+        const trendNote = trend === 'improving'
+          ? ` Reps have been climbing — keep the momentum.`
+          : trend === 'flat' && sessionsAtCur >= 3
+            ? ` ${sessionsAtCur} sessions at this weight with similar numbers — make this the one you push through.`
+            : '';
+        reason = nearCeil
+          ? `Last session top: ${prevMax} reps — one off the ceiling (${upgrade}). This is the session to hit ${upgrade}+ across the board.${trendNote}`
+          : `Last session: ${prev.length} set${prev.length===1?'':'s'}, top ${prevMax}r avg ${Math.round(prev.reduce((a,s)=>a+s.reps,0)/prev.length*10)/10}r. Target ${repMin}–${repMax} — hit ${upgrade} on every set to progress.${trendNote}`;
+      } else {
+        reason = `Target ${repMin}–${repMax} reps. Hit ${upgrade} on every set to progress.`;
+      }
 
     } else {
       // Sets logged today — apply coaching rules
@@ -3255,8 +3298,12 @@ window.addEventListener('sync:dashboard', () => {
 
       } else if (allAtCeil && reps.length === 1 && !ex.bw) {
         // First set at ceiling — encourage finishing all sets
+        const history = getSessionHistory(ex.id, allLogs, 8);
+        const trend   = getRepTrend(history, curWeight);
         headline = `Set 1 hit ${upgrade} — keep going`;
-        reason   = `First set is solid. Hit ${upgrade}+ on every remaining set and you'll be ready to progress.`;
+        reason   = trend === 'improving'
+          ? `Reps have been trending up — momentum is in your favour. Match this on every remaining set and you're moving to ${nextWeight}${units}.`
+          : `First set is solid. Hit ${upgrade}+ on every remaining set and you'll be ready to progress.`;
 
       } else if (stalled) {
         // Rule 3: 3+ consecutive sessions stalled below range → deload ~10%
@@ -3288,8 +3335,21 @@ window.addEventListener('sync:dashboard', () => {
 
       } else {
         // Rule 2: Within range but not at ceiling → hold, push for more reps
+        const history = getSessionHistory(ex.id, allLogs, 8);
+        const trend   = getRepTrend(history, curWeight);
+        const sessionsAtCur = history.filter(s => parseFloat(s.weight) === parseFloat(curWeight)).length;
+        const topSet  = Math.max(...reps);
+        const hitCeilOnce = topSet >= upgrade;
         headline = ex.bw ? `Keep building` : `Hold at ${curWeight} ${units}`;
-        reason   = `Sets: ${reps.join(', ')} — within range. Push for ${upgrade} on every set to unlock the next weight.`;
+        if (hitCeilOnce) {
+          reason = `Top set hit ${topSet} — you have the strength for ${nextWeight}${units}. Bring the other sets (${reps.join(', ')}) up to ${upgrade} to lock in the advance.`;
+        } else if (trend === 'improving') {
+          reason = `Sets: ${reps.join(', ')} — reps have been climbing each session. Stay consistent and you'll hit ${upgrade} across the board soon.`;
+        } else if (trend === 'flat' && sessionsAtCur >= 3) {
+          reason = `Sets: ${reps.join(', ')} — ${sessionsAtCur} sessions at ${curWeight}${units} with similar numbers. Try more rest between sets or prioritise sleep/nutrition to break through.`;
+        } else {
+          reason = `Sets: ${reps.join(', ')} — within range. Push for ${upgrade} on every set to unlock ${nextWeight}${units}.`;
+        }
       }
     }
 
@@ -3409,7 +3469,7 @@ window.addEventListener('sync:dashboard', () => {
       .map(([date, sets]) => {
         const topWeight = Math.max(...sets.map(s => s.weight));
         const topReps   = Math.max(...sets.map(s => s.reps));
-        const avgReps   = Math.round(sets.reduce((a, s) => a + s.reps, 0) / sets.length);
+        const avgReps   = sets.reduce((a, s) => a + s.reps, 0) / sets.length; // float for rep ratio
         const allAtCeil = sets.length >= 2 && sets.every(s => s.reps >= upgrade);
         const anyBelow  = sets.some(s => s.reps < repMin);
         const status    = allAtCeil ? 'ready' : anyBelow ? 'struggling' : 'building';
@@ -3425,7 +3485,8 @@ window.addEventListener('sync:dashboard', () => {
 
     const weights = sessions.map(s => s.weight);
     const lo = Math.min(...weights), hi = Math.max(...weights);
-    const pad = Math.max((hi - lo) * 0.15, parseFloat(ex.step || 5));
+    const step = parseFloat(ex.step || 2.5);
+    const pad = Math.max((hi - lo) * 0.15, step);
     const yMin = lo - pad, yMax = hi + pad;
 
     const xOf = i => sessions.length > 1
@@ -3433,7 +3494,15 @@ window.addEventListener('sync:dashboard', () => {
       : PL + cW / 2;
     const yOf = w => PT + cH - ((w - yMin) / (yMax - yMin)) * cH;
 
-    const pts = sessions.map((s, i) => ({ x: xOf(i), y: yOf(s.weight), ...s }));
+    // Rep-adjusted Y: dot floats between yOf(weight) and yOf(weight+step) based on reps vs range
+    const yOfAdj = (weight, avgReps) => {
+      const ratio   = Math.max(0, Math.min(1, (avgReps - repMin) / Math.max(1, upgrade - repMin)));
+      const baseY   = yOf(weight);
+      const nextY   = yOf(weight + step);
+      return baseY - ratio * (baseY - nextY);
+    };
+
+    const pts = sessions.map((s, i) => ({ x: xOf(i), y: yOfAdj(s.weight, s.avgReps), rawY: yOf(s.weight), ...s }));
 
     // Dot colour by session performance
     const col = status => status === 'ready' ? '#6ee7b7' : status === 'struggling' ? '#fb923c' : '#818cf8';
@@ -3482,12 +3551,13 @@ window.addEventListener('sync:dashboard', () => {
       const r = isLast ? 5.5 : 3.5;
       const dot = `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}"
         fill="${isLast ? c : 'rgba(10,10,11,0.85)'}" stroke="${c}" stroke-width="${isLast ? 0 : 1.8}"/>`;
-      // Show top reps below each dot (skip if dots too close)
+      // Show avg reps label; position above the dot (not below) so label stays in chart area
       const showReps = pts.length <= 12 || isLast;
+      const labelY   = (p.y - r - 3).toFixed(1);
       const repLabel = showReps
-        ? `<text x="${p.x.toFixed(1)}" y="${(p.y + r + 9).toFixed(1)}"
+        ? `<text x="${p.x.toFixed(1)}" y="${labelY}"
             font-size="8" fill="${isLast ? c : 'rgba(255,255,255,0.3)'}"
-            text-anchor="middle" font-family="monospace">${p.topReps}r</text>`
+            text-anchor="middle" font-family="monospace">${Math.round(p.avgReps)}r</text>`
         : '';
       return dot + repLabel;
     }).join('');
