@@ -3031,7 +3031,19 @@ window.addEventListener('sync:dashboard', () => {
   }
   function saveExercises(ex) { set('po:exercises', ex); }
   function getLogs() { return get('po:logs') || []; }
-  function addLog(entry) { const logs = getLogs(); logs.unshift(entry); set('po:logs', logs); }
+  function addLog(entry) {
+    const logs = getLogs();
+    logs.unshift(entry);
+    try {
+      set('po:logs', logs);
+    } catch (e) {
+      // QuotaExceeded: trim oldest 50 logs and retry once
+      if (e && e.name === 'QuotaExceededError') {
+        const trimmed = logs.slice(0, logs.length - 50);
+        try { set('po:logs', trimmed); } catch {}
+      }
+    }
+  }
 
   function todayStr() {
     const d = new Date();
@@ -4941,7 +4953,7 @@ window.addEventListener('sync:dashboard', () => {
     return merged;
   }
 
-  // Initial pull — seed remote if empty, else smart-merge remote into local
+  // Initial pull — seed remote if empty, else smart-merge and push back if needed
   async function init() {
     for (const bucket of ['dashboard', 'training', 'school']) {
       try {
@@ -4956,35 +4968,50 @@ window.addEventListener('sync:dashboard', () => {
         } else if (remoteJson !== localJson) {
           const merged     = smartMerge(local, remote);
           const mergedJson = JSON.stringify(merged);
-          lastPushed[bucket] = mergedJson;
-          apply(bucket, merged);
-          if (mergedJson !== remoteJson) push(bucket); // write merged back to remote
+          apply(bucket, merged); // write merged to local first
+          if (mergedJson !== remoteJson) {
+            // Push merged back to remote — do NOT set lastPushed before this
+            // so push()'s dedup check doesn't short-circuit it
+            await push(bucket);
+          } else {
+            lastPushed[bucket] = mergedJson;
+          }
+        } else {
+          lastPushed[bucket] = localJson;
         }
       } catch (e) { console.warn('Sync init', bucket, e); }
     }
   }
 
-  // Realtime — apply changes from other devices
+  // Realtime — merge remote changes into local instead of blindly overwriting
   let pendingRemote = {};
   db.channel('app_state')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'app_state' }, payload => {
       try {
-        const bucket = payload.new?.key;
+        const bucket     = payload.new?.key;
         if (!bucket) return;
-        const json = JSON.stringify(payload.new?.data);
-        if (json === lastPushed[bucket]) return; // echo from our own push
+        const remoteData = payload.new?.data;
+        const json       = JSON.stringify(remoteData);
+        if (json === lastPushed[bucket]) return; // confirmed echo — skip
         const active   = document.activeElement;
         const isTyping = active && (['INPUT','TEXTAREA','SELECT'].includes(active.tagName) || active.contentEditable === 'true');
-        if (isTyping) { pendingRemote[bucket] = payload.new.data; return; }
-        lastPushed[bucket] = json;
-        apply(bucket, payload.new.data);
+        if (isTyping) { pendingRemote[bucket] = remoteData; return; }
+        const local  = collect(bucket);
+        const merged = smartMerge(local, remoteData);
+        lastPushed[bucket] = json; // track remote state to suppress future echoes
+        apply(bucket, merged);
       } catch {}
     })
     .subscribe();
 
   document.addEventListener('focusout', () => {
     try {
-      Object.entries(pendingRemote).forEach(([b, d]) => { lastPushed[b] = JSON.stringify(d); apply(b, d); });
+      Object.entries(pendingRemote).forEach(([b, d]) => {
+        const local  = collect(b);
+        const merged = smartMerge(local, d);
+        lastPushed[b] = JSON.stringify(d);
+        apply(b, merged);
+      });
       pendingRemote = {};
     } catch {}
   });
