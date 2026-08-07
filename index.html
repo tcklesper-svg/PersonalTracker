@@ -3966,15 +3966,18 @@ window.addEventListener('sync:dashboard', () => {
       if (!byDate[l.date]) byDate[l.date] = [];
       byDate[l.date].push(l);
     });
-    const days = Object.entries(byDate).sort(([a], [b]) => b.localeCompare(a)).slice(0, 30);
-    if (countEl) countEl.textContent = days.length;
-    if (!days.length) {
+    const allDays = Object.entries(byDate).sort(([a], [b]) => b.localeCompare(a));
+    if (countEl) countEl.textContent = allDays.length;
+    if (!allDays.length) {
       body.innerHTML = '<div class="po-tw-past-empty">No past workouts yet.</div>';
       return;
     }
+    const PAGE = 30;
+    let showing = parseInt(body.dataset.showing || PAGE);
+    const days  = allDays.slice(0, showing);
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const dow    = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    body.innerHTML = days.map(([date, sets]) => {
+    const rows = days.map(([date, sets]) => {
       const d    = new Date(date + 'T12:00');
       const label= `${dow[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()}`;
       const vol  = sets.reduce((s, l) => s + (l.weight||0)*l.reps, 0);
@@ -3993,6 +3996,14 @@ window.addEventListener('sync:dashboard', () => {
         }</div>
       </div>`;
     }).join('');
+    const moreBtn = allDays.length > showing
+      ? `<button id="twPastMore" style="width:100%;padding:10px;margin-top:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--text-2);font-size:13px;cursor:pointer">Show ${Math.min(PAGE, allDays.length - showing)} more (${allDays.length - showing} remaining)</button>`
+      : '';
+    body.innerHTML = rows + moreBtn;
+    body.querySelector('#twPastMore')?.addEventListener('click', () => {
+      body.dataset.showing = showing + PAGE;
+      renderPastWorkouts();
+    });
   }
 
   document.getElementById('twPastToggle')?.addEventListener('click', function () {
@@ -4907,7 +4918,30 @@ window.addEventListener('sync:dashboard', () => {
     try { const b = bucketForKey(k); if (b) schedule(b); } catch {}
   };
 
-  // Initial pull — seed remote if empty, apply remote if populated
+  // Merge two bucket snapshots: for ts-keyed log arrays take union; for others keep local if available
+  function smartMerge(local, remote) {
+    const merged = {};
+    const keys = new Set([...Object.keys(local), ...Object.keys(remote)]);
+    for (const k of keys) {
+      const l = local[k], r = remote[k];
+      if (Array.isArray(l) && Array.isArray(r)) {
+        if (l.length > 0 && l[0]?.ts !== undefined) {
+          // Log arrays: union by ts — local entry wins on conflict (local is authoritative)
+          const byTs = {};
+          r.forEach(e => { byTs[e.ts] = e; });
+          l.forEach(e => { byTs[e.ts] = e; });
+          merged[k] = Object.values(byTs).sort((a, b) => b.ts - a.ts);
+        } else {
+          merged[k] = l.length >= r.length ? l : r; // keep whichever is longer
+        }
+      } else {
+        merged[k] = (k in local) ? l : r; // prefer local for non-array values
+      }
+    }
+    return merged;
+  }
+
+  // Initial pull — seed remote if empty, else smart-merge remote into local
   async function init() {
     for (const bucket of ['dashboard', 'training', 'school']) {
       try {
@@ -4916,11 +4950,15 @@ window.addEventListener('sync:dashboard', () => {
         const remote     = data?.data || {};
         const remoteJson = JSON.stringify(remote);
         const local      = collect(bucket);
+        const localJson  = JSON.stringify(local);
         if (Object.keys(remote).length === 0) {
           await push(bucket); // seed remote from local
-        } else if (remoteJson !== JSON.stringify(local)) {
-          lastPushed[bucket] = remoteJson;
-          apply(bucket, remote); // apply remote to local
+        } else if (remoteJson !== localJson) {
+          const merged     = smartMerge(local, remote);
+          const mergedJson = JSON.stringify(merged);
+          lastPushed[bucket] = mergedJson;
+          apply(bucket, merged);
+          if (mergedJson !== remoteJson) push(bucket); // write merged back to remote
         }
       } catch (e) { console.warn('Sync init', bucket, e); }
     }
